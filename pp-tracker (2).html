@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>pp sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&family=Inconsolata:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pink: #ff66aa; --pink-dim: #cc4d88; --gold: #ffd700;
+    --bg: #0e0e12; --bg2: #15151c; --bg3: #1c1c26; --bg4: #232330;
+    --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.12);
+    --text: #e8e8f0; --text2: #8888aa; --text3: #555570;
+    --green: #3de68a; --red: #ff5555; --orange: #ffaa44;
+    --mono: 'Inconsolata', monospace; --sans: 'Nunito', sans-serif;
+    --r: 10px; --rs: 6px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; zoom: 1.2; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  .topbar { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 14px 28px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
+  .logo { font-family: var(--mono); font-size: 15px; color: var(--pink); letter-spacing: -0.5px; }
+  .logo span { color: var(--text2); }
+  .topbar-right { margin-left: auto; display: flex; gap: 8px; }
+
+  .btn { font-family: var(--sans); font-size: 12px; font-weight: 500; padding: 6px 14px; border-radius: var(--rs); border: 1px solid var(--border2); background: var(--bg3); color: var(--text2); cursor: pointer; transition: all 0.15s; white-space: nowrap; display: inline-flex; align-items: center; gap: 5px; }
+  .btn:hover { background: var(--bg4); color: var(--text); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-pink { background: var(--pink); border-color: var(--pink); color: #fff; font-weight: 600; }
+  .btn-pink:hover { background: var(--pink-dim); border-color: var(--pink-dim); }
+  .btn-sm { padding: 4px 10px; font-size: 11px; }
+  .btn-icon { padding: 4px 8px; }
+
+  .main { padding: 24px 28px; max-width: 1300px; margin: 0 auto; }
+
+  .stats-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin-bottom: 24px; }
+  .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); padding: 16px 18px; }
+  .stat-label { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-bottom: 6px; }
+  .stat-val { font-family: var(--mono); font-size: 22px; color: var(--text); }
+  .stat-val.pink { color: var(--pink); }
+  .stat-sub { font-size: 11px; color: var(--text3); margin-top: 3px; }
+
+  .toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+  .search-wrap { position: relative; flex: 1; min-width: 160px; max-width: 260px; }
+  .search-wrap input { width: 100%; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--rs); color: var(--text); font-family: var(--sans); font-size: 13px; padding: 7px 10px 7px 30px; outline: none; transition: border-color 0.15s; }
+  .search-wrap input:focus { border-color: var(--pink); }
+  .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 12px; pointer-events: none; }
+  .pill { font-size: 11px; font-weight: 500; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg2); color: var(--text2); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .pill:hover { border-color: var(--border2); color: var(--text); }
+  .pill.active { background: var(--pink); border-color: var(--pink); color: #fff; }
+  .sep { width: 1px; height: 20px; background: var(--border); margin: 0 2px; flex-shrink: 0; }
+
+  .table-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; position: relative; }
+  thead { background: var(--bg3); }
+  th { padding: 10px 12px; text-align: left; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text3); font-weight: 500; white-space: nowrap; cursor: pointer; user-select: none; }
+  th:hover { color: var(--text2); }
+  th.sorted { color: var(--pink); }
+  td { padding: 9px 12px; border-top: 1px solid var(--border); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .rank-num { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+  .pp-w { font-family: var(--mono); color: var(--pink); }
+  .pp-raw { font-family: var(--mono); color: var(--text2); font-size: 12px; }
+  .weight-val { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+  .mod-icons { display: inline-flex; gap: 2px; flex-wrap: nowrap; align-items: center; }
+  .mod-icon { width: 30px; height: 30px; object-fit: contain; border-radius: 6px; }
+  .fc-tag { font-size: 11px; font-weight: 600; color: var(--green); }
+  .miss-tag { font-size: 11px; color: var(--red); }
+  .sb-tag { font-size: 11px; color: var(--orange); }
+  .acc-cell { display: flex; align-items: center; gap: 8px; }
+  .acc-num { font-family: var(--mono); font-size: 12px; min-width: 54px; }
+  .grade-img { width: 32px; height: 32px; object-fit: contain; }
+  .act-btns { display: flex; gap: 4px; opacity: 0; transition: opacity 0.1s; }
+  tr:hover .act-btns { opacity: 1; }
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--text3); }
+  .empty-state .big { font-size: 32px; margin-bottom: 8px; }
+  .empty-state p { font-size: 13px; line-height: 1.8; }
+  .hint-link { color: var(--pink); cursor: pointer; text-decoration: underline; }
+
+  .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; align-items: center; justify-content: center; padding: 1rem; }
+  .modal-bg.open { display: flex; }
+  .modal { background: var(--bg2); border: 1px solid var(--border2); border-radius: 14px; padding: 28px; width: 480px; max-width: 100%; max-height: 90vh; overflow-y: auto; }
+  .modal h2 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+  .modal-sub { font-size: 12px; color: var(--text3); margin-bottom: 20px; line-height: 1.5; }
+  .form-row { margin-bottom: 14px; }
+  .form-row label { display: block; font-size: 11px; color: var(--text2); margin-bottom: 5px; letter-spacing: 0.04em; text-transform: uppercase; }
+  .form-row input, .form-row select { width: 100%; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--rs); color: var(--text); font-family: var(--sans); font-size: 13px; padding: 8px 10px; outline: none; transition: border-color 0.15s; }
+  .form-row input:focus, .form-row select:focus { border-color: var(--pink); }
+  .form-row select option { background: var(--bg3); }
+  .form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-3col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .form-4col { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .pp-calc-status { font-size: 10px; font-weight: 400; text-transform: none; letter-spacing: 0; margin-left: 6px; vertical-align: middle; }
+  .pp-calc-status.loading { color: var(--text3); }
+  .pp-calc-status.ok { color: var(--green); }
+  .pp-calc-status.err { color: var(--red); }
+  .mod-picker { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .mod-btn { font-family: var(--mono); font-size: 11px; font-weight: 700; padding: 5px 11px; border-radius: 5px; border: 1px solid var(--border2); background: var(--bg4); color: var(--text2); cursor: pointer; transition: all 0.12s; user-select: none; }
+  .mod-btn:hover { border-color: var(--pink); color: var(--text); }
+  .mod-btn.active { background: var(--pink); border-color: var(--pink); color: #fff; }
+  .mods-string { font-family: var(--mono); font-size: 11px; color: var(--text3); font-weight: 400; text-transform: none; letter-spacing: 0; margin-left: 8px; }
+  @media (max-width: 700px) { .form-4col { grid-template-columns: 1fr 1fr; } }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+  .hint-text { font-size: 11px; color: var(--text3); margin-top: 5px; line-height: 1.6; }
+  .hint-text a { color: var(--pink); text-decoration: none; }
+  .hint-text a:hover { text-decoration: underline; }
+
+  .link-row { display: flex; gap: 8px; align-items: flex-end; margin-bottom: 4px; }
+  .link-row .form-row { flex: 1; margin-bottom: 0; }
+  .fetch-status { font-size: 11px; margin-bottom: 14px; min-height: 16px; }
+  .fetch-status.ok { color: var(--green); }
+  .fetch-status.err { color: var(--red); }
+  .fetch-status.loading { color: var(--text3); }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+  .setup-badge { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--orange); color: #3a1800; margin-left: 8px; vertical-align: middle; }
+  .api-status { font-size: 11px; color: var(--text3); display: flex; align-items: center; gap: 5px; }
+  .api-status.connected { color: var(--green); }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; display: inline-block; flex-shrink: 0; }
+
+  .footer { text-align: center; font-size: 11px; color: var(--text3); padding: 28px 0 20px; }
+
+  @keyframes rowBgFade { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; transform: translateX(0); } }
+  tr.has-cover { position: relative; }
+  tr.has-cover td { position: relative; z-index: 1; text-shadow: 0 1px 4px rgba(0,0,0,0.8); }
+  tr.has-cover .rank-num,
+  tr.has-cover .pp-raw,
+  tr.has-cover .weight-val,
+  tr.has-cover .acc-num,
+  tr.has-cover .combo-val { color: rgba(255,255,255,0.85) !important; }
+  tr.has-cover::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background-image:
+      linear-gradient(to right, rgba(21,21,28,0.98) 0%, rgba(21,21,28,0.95) 25%, rgba(21,21,28,0.80) 55%, rgba(21,21,28,0.55) 100%),
+      var(--row-bg);
+    background-size: auto, cover;
+    background-position: center, center;
+    animation: rowBgFade 0.7s ease;
+  }
+
+  @media (max-width: 700px) {
+    .main { padding: 16px; } .topbar { padding: 12px 16px; flex-wrap: wrap; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .form-2col { grid-template-columns: 1fr; }
+    .form-3col { grid-template-columns: 1fr; }
+    .topbar-right { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">pp<span>sheet</span></div>
+  <div id="api-status-el" class="api-status"></div>
+  <div class="topbar-right">
+    <button class="btn" onclick="openSetup()">⚙ API Setup</button>
+    <button class="btn" onclick="exportData()">Export</button>
+    <label class="btn" style="cursor:pointer;">Import <input type="file" accept=".json" style="display:none" onchange="importFile(event)"></label>
+    <button class="btn btn-pink" onclick="openAddModal()">+ Add play</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Total PP</div>
+      <div class="stat-val pink" id="s-total">0pp</div>
+      <div class="stat-sub" id="s-bonus">+0 bonus</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Plays logged</div>
+      <div class="stat-val" id="s-count">0</div>
+      <div class="stat-sub">out of 200 max</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Avg accuracy</div>
+      <div class="stat-val" id="s-acc">—</div>
+      <div class="stat-sub">weighted top 100</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">First place</div>
+      <div class="stat-val" id="s-fc">—</div>
+      <div class="stat-sub" id="s-fc-sub">— #1 scores</div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input id="search-input" placeholder="Search beatmap..." oninput="renderTable()" />
+    </div>
+    <div class="sep"></div>
+    <div class="pill active" id="f-all" onclick="clearModFilter()">All</div>
+    <div id="mod-pills" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;"></div>
+    <div class="sep"></div>
+    <div class="pill" id="f-fc" onclick="toggleFC()">FC only</div>
+    <div class="pill" id="f-miss" onclick="toggleMiss()">Misses</div>
+    <div class="pill" id="f-first" onclick="toggleFirst()">1st place</div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:36px">#</th>
+          <th id="th-weighted" class="sorted" onclick="setSort('weighted')" style="width:80px">W. PP ↓</th>
+          <th id="th-pp" onclick="setSort('pp')" style="width:72px">Raw PP</th>
+          <th id="th-beatmap" onclick="setSort('beatmap')">Beatmap</th>
+          <th style="width:72px">Mods</th>
+          <th id="th-weight" onclick="setSort('weight')" style="width:70px">Weight</th>
+          <th id="th-acc" onclick="setSort('acc')" style="width:130px">Accuracy</th>
+          <th style="width:110px">Combo</th>
+          <th style="width:60px"></th>
+        </tr>
+      </thead>
+      <tbody id="play-tbody"></tbody>
+    </table>
+  </div>
+  <div class="footer">ppsheet · data stays in your browser only</div>
+</div>
+
+<!-- Add/Edit modal -->
+<div class="modal-bg" id="play-modal">
+<div class="modal">
+  <h2 id="modal-title">Add play</h2>
+  <p class="modal-sub">Paste the osu! beatmap link to auto-fill the name, then fill in your play details.</p>
+
+  <div class="link-row">
+    <div class="form-row">
+      <label>Beatmap link</label>
+      <input id="f-link" type="url" placeholder="https://osu.ppy.sh/beatmapsets/..." />
+    </div>
+    <button class="btn" id="fetch-btn" onclick="fetchBeatmap()" style="flex-shrink:0;align-self:flex-end;">Fetch</button>
+  </div>
+  <div class="fetch-status" id="fetch-status"></div>
+
+  <hr class="divider">
+
+  <div class="form-row">
+    <label>Beatmap name <span style="color:var(--text3);font-weight:400;text-transform:none;">(auto-filled or type manually)</span></label>
+    <input id="f-beatmap" type="text" placeholder="e.g. Artist - Title [Insane]" />
+  </div>
+
+  <div class="form-row">
+    <label>Mods <span id="mods-string-display" class="mods-string">NM</span></label>
+    <div id="mod-picker" class="mod-picker"></div>
+  </div>
+
+  <div class="form-4col">
+    <div class="form-row">
+      <label>Combo</label>
+      <input id="f-combo" type="text" placeholder="FC or 578x" oninput="clampCombo(); schedulePPCalc()" />
+    </div>
+    <div class="form-row">
+      <label>100 count</label>
+      <input id="f-count100" type="number" placeholder="0" min="0" step="1" oninput="schedulePPCalc()" />
+    </div>
+    <div class="form-row">
+      <label>50 count</label>
+      <input id="f-count50" type="number" placeholder="0" min="0" step="1" oninput="schedulePPCalc()" />
+    </div>
+    <div class="form-row">
+      <label>Misses</label>
+      <input id="f-misses" type="number" placeholder="0" min="0" step="1" oninput="schedulePPCalc()" />
+    </div>
+  </div>
+
+  <div class="form-row">
+    <label>Performance (PP) <span id="pp-calc-status" class="pp-calc-status"></span></label>
+    <input id="f-pp" type="number" placeholder="auto-calculated or enter manually" min="0" step="0.01" />
+  </div>
+
+  <div class="form-row" style="margin-top:4px;">
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;font-size:13px;color:var(--text2);">
+      <input type="checkbox" id="f-first-place" style="accent-color:var(--pink);width:14px;height:14px;" />
+      #1 on leaderboard
+    </label>
+  </div>
+  <div id="save-error" style="font-size:11px;color:var(--red);min-height:16px;margin-top:10px;"></div>
+  <div class="modal-actions">
+    <button class="btn" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-pink" onclick="savePlay()">Save play</button>
+  </div>
+</div>
+</div>
+
+<!-- API Setup modal -->
+<div class="modal-bg" id="setup-modal">
+<div class="modal">
+  <h2>osu! API setup <span class="setup-badge">one-time</span></h2>
+  <p class="modal-sub">
+    This lets the app auto-fill beatmap names from links. Your credentials are stored only in your browser and only sent to osu!'s servers.
+  </p>
+
+  <div class="form-row">
+    <label>Client ID</label>
+    <input id="api-id" type="text" placeholder="e.g. 12345" />
+  </div>
+  <div class="form-row">
+    <label>Client Secret</label>
+    <input id="api-secret" type="password" placeholder="paste your secret here" />
+    <div class="hint-text">
+      1. Go to <a href="https://osu.ppy.sh/home/account/edit#oauth" target="_blank">osu.ppy.sh → Settings → OAuth ↗</a><br>
+      2. Click "New OAuth Application" — name it anything<br>
+      3. Set callback URL to <code style="background:var(--bg4);padding:1px 5px;border-radius:3px;">http://localhost</code><br>
+      4. Copy the Client ID and Client Secret here
+    </div>
+  </div>
+
+  <div class="modal-actions">
+    <button class="btn" onclick="closeSetup()">Cancel</button>
+    <button class="btn btn-pink" id="save-api-btn" onclick="saveApiCreds()">Save &amp; connect</button>
+  </div>
+</div>
+</div>
+
+<script>
+let plays = [];
+let sortKey = 'weighted', sortDir = 1;
+let modFilters = new Set(), fcFilter = false, missFilter = false, firstFilter = false;
+let editingId = null;
+let osuToken = null;
+let currentBmId = null;
+let currentMaxCombo = null;
+let currentHitCircleCount = 0;
+let currentSliderCount = 0;
+let currentSpinnerCount = 0;
+let currentBaseAR = 0;
+let currentBaseOD = 0;
+let calculatedAcc = null;
+let currentCoverUrl = null;
+let ppCalcTimer = null;
+let attrsCache = {}; // key: `${bmId}_${modStr}` → difficulty attributes
+const PLAYS_KEY = 'ppsheet_v2_plays';
+const CREDS_KEY = 'ppsheet_osu_creds';
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function load() {
+  try { plays = JSON.parse(localStorage.getItem(PLAYS_KEY)) || []; } catch { plays = []; }
+  updateApiStatus();
+  renderModPills();
+  renderTable();
+}
+function save() { localStorage.setItem(PLAYS_KEY, JSON.stringify(plays)); }
+
+// ── osu! API ──────────────────────────────────────────────────────────────────
+function getCreds() { try { return JSON.parse(localStorage.getItem(CREDS_KEY)) || null; } catch { return null; } }
+
+function isLocalServer() { return location.protocol === 'http:' && location.hostname === 'localhost'; }
+
+async function getToken() {
+  const creds = getCreds(); if (!creds) return null;
+  if (osuToken && osuToken.expires > Date.now()) return osuToken.access_token;
+  const body = JSON.stringify({ client_id: creds.id, client_secret: creds.secret, grant_type: 'client_credentials', scope: 'public' });
+  const headers = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
+  // Use local proxy when running via server.py, otherwise fall back to CORS proxies
+  const endpoints = isLocalServer()
+    ? [() => fetch('/proxy/token', { method: 'POST', headers, body })]
+    : [
+        () => fetch('https://osu.ppy.sh/oauth/token', { method: 'POST', headers, body }),
+        () => fetch('https://corsproxy.io/?url=https://osu.ppy.sh/oauth/token', { method: 'POST', headers, body }),
+        () => fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent('https://osu.ppy.sh/oauth/token'), { method: 'POST', headers, body }),
+      ];
+  for (const attempt of endpoints) {
+    try {
+      const res = await attempt();
+      if (!res.ok) continue;
+      const d = await res.json();
+      if (!d.access_token) continue;
+      osuToken = { access_token: d.access_token, expires: Date.now() + (d.expires_in - 60) * 1000 };
+      return osuToken.access_token;
+    } catch { continue; }
+  }
+  return null;
+}
+
+function parseBeatmapId(url) {
+  const patterns = [
+    /beatmapsets\/\d+#(?:osu|taiko|fruits|mania)\/(\d+)/,
+    /\/beatmaps\/(\d+)/,
+    /[?&]b=(\d+)/,
+    /\/b\/(\d+)/,
+  ];
+  for (const p of patterns) { const m = url.match(p); if (m) return m[1]; }
+  return null;
+}
+
+async function fetchBeatmap() {
+  const url = document.getElementById('f-link').value.trim();
+  if (!url) { setFetchStatus('Paste a beatmap link first.', 'err'); return; }
+  if (!getCreds()) { setFetchStatus('API not set up — click "API Setup" in the top bar first.', 'err'); return; }
+  const bmId = parseBeatmapId(url);
+  if (!bmId) { setFetchStatus('Could not find a beatmap ID in that link. Make sure it links to a specific difficulty.', 'err'); return; }
+
+  setFetchStatus('Fetching...', 'loading');
+  document.getElementById('fetch-btn').disabled = true;
+  try {
+    const token = await getToken();
+    if (!token) { setFetchStatus('Could not connect to osu! API. Check your credentials in API Setup.', 'err'); return; }
+    const beatmapUrl = isLocalServer()
+      ? `/proxy/beatmap/${bmId}`
+      : `https://osu.ppy.sh/api/v2/beatmaps/${bmId}`;
+    const res = await fetch(beatmapUrl, {
+      headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+    });
+    if (!res.ok) { setFetchStatus(`osu! API error (${res.status}). Double-check the link.`, 'err'); return; }
+    const data = await res.json();
+    const artist = data.beatmapset?.artist || '';
+    const title = data.beatmapset?.title || '';
+    const version = data.version || '';
+    const name = (artist && title) ? `${artist} - ${title} [${version}]` : (title || version);
+    document.getElementById('f-beatmap').value = name;
+    setFetchStatus('✓ ' + name, 'ok');
+    currentBmId = bmId;
+    currentMaxCombo = data.max_combo || null;
+    currentHitCircleCount = data.count_circles || 0;
+    currentSliderCount = data.count_sliders || 0;
+    currentSpinnerCount = data.count_spinners || 0;
+    currentBaseAR = data.ar || 0;
+    currentBaseOD = data.accuracy || 0; // osu! API uses 'accuracy' for OD
+    currentCoverUrl = data.beatmapset?.covers?.['cover@2x'] || data.beatmapset?.covers?.cover || null;
+    const comboInput = document.getElementById('f-combo');
+    comboInput.placeholder = currentMaxCombo ? `max ${currentMaxCombo}x` : 'FC or 578x';
+    schedulePPCalc();
+  } catch { setFetchStatus('Network error. Check your connection.', 'err'); }
+  finally { document.getElementById('fetch-btn').disabled = false; }
+}
+
+// ── Mod picker ────────────────────────────────────────────────────────────────
+const MOD_LIST = [
+  { key: 'EZ', label: 'Easy',        conflicts: ['HR'] },
+  { key: 'NF', label: 'No Fail',     conflicts: [] },
+  { key: 'HT', label: 'Half Time',   conflicts: ['DT'] },
+  { key: 'DT', label: 'Double Time', conflicts: ['HT'] },
+  { key: 'HR', label: 'Hard Rock',   conflicts: ['EZ'] },
+  { key: 'HD', label: 'Hidden',      conflicts: [] },
+  { key: 'FL', label: 'Flashlight',  conflicts: [] },
+  { key: 'RX', label: 'Relax',       conflicts: ['AP'] },
+  { key: 'AP', label: 'Autopilot',   conflicts: ['RX'] },
+  { key: 'SO', label: 'Spun Out',    conflicts: [] },
+];
+const MOD_ORDER = MOD_LIST.map(m => m.key);
+let selectedMods = new Set();
+
+function getModString() {
+  const active = MOD_ORDER.filter(k => selectedMods.has(k));
+  return active.length ? active.join('') : 'NM';
+}
+
+function setSelectedMods(modStr) {
+  selectedMods.clear();
+  if (modStr && modStr !== 'NM') {
+    // greedily match known mods in display order
+    MOD_ORDER.forEach(k => { if (modStr.includes(k)) selectedMods.add(k); });
+  }
+}
+
+function toggleMod(key) {
+  if (selectedMods.has(key)) {
+    selectedMods.delete(key);
+  } else {
+    const mod = MOD_LIST.find(m => m.key === key);
+    mod.conflicts.forEach(c => selectedMods.delete(c));
+    selectedMods.add(key);
+  }
+  renderModPicker();
+  schedulePPCalc();
+}
+
+function renderModPicker() {
+  const picker = document.getElementById('mod-picker');
+  if (!picker) return;
+  picker.innerHTML = MOD_LIST.map(m =>
+    `<button type="button" class="mod-btn${selectedMods.has(m.key) ? ' active' : ''}" onclick="toggleMod('${m.key}')">${m.key}</button>`
+  ).join('');
+  const display = document.getElementById('mods-string-display');
+  if (display) display.textContent = getModString();
+}
+
+// ── PP calculation (osu! API attributes + local formula) ──────────────────────
+function modApiArray(modStr) {
+  return MOD_ORDER.filter(k => modStr.includes(k)).map(k => ({ acronym: k }));
+}
+
+function setPPStatus(msg, type) {
+  const el = document.getElementById('pp-calc-status');
+  el.textContent = msg;
+  el.className = 'pp-calc-status' + (type ? ' ' + type : '');
+}
+
+function clampCombo() {
+  if (!currentMaxCombo) return;
+  const el = document.getElementById('f-combo');
+  const num = parseInt(el.value);
+  if (!isNaN(num) && num > currentMaxCombo) el.value = currentMaxCombo;
+}
+
+function schedulePPCalc() {
+  clearTimeout(ppCalcTimer);
+  if (!currentBmId || !isLocalServer()) return;
+  setPPStatus('calculating…', 'loading');
+  ppCalcTimer = setTimeout(calcPP, 600);
+}
+
+// ── osu!standard PP formula (ported from osu! source) ────────────────────────
+function d2p(diff) { // DifficultyToPerformance
+  return Math.pow(5.0 * Math.max(1.0, diff / 0.0675) - 4.0, 3.0) / 100000.0;
+}
+function missPen(missCount, strainCount) { // calculateMissPenalty
+  if (strainCount <= 1) return 1.0;
+  return 0.96 / (missCount / (4 * Math.pow(Math.log(strainCount), 0.94)) + 1);
+}
+function comboSc(combo, maxCombo) { // getComboScalingFactor
+  return maxCombo <= 0 ? 1.0 : Math.min(Math.pow(combo, 0.8) / Math.pow(maxCombo, 0.8), 1.0);
+}
+function revLerp(t, a, b) { return Math.max(0, Math.min(1, (t - a) / (b - a))); }
+
+function osuPP(attrs, combo, count100, count50, countMiss, mods) {
+  const {
+    aim_difficulty: aimDiff = 0,    speed_difficulty: speedDiff = 0,
+    flashlight_difficulty: flDiff = 0,
+    slider_factor: sliderFactor = 1,
+    aim_difficult_strain_count: aimSC = 1,
+    speed_difficult_strain_count: spdSC = 1,
+    speed_note_count: speedNC = 0,
+    max_combo: maxCombo = 0,
+    approach_rate: ar = 9,
+    overall_difficulty: od = 9,
+  } = attrs;
+
+  const totalHits = currentHitCircleCount + currentSliderCount + currentSpinnerCount;
+  if (totalHits === 0) return 0;
+
+  const countGreat = Math.max(0, totalHits - count100 - count50 - countMiss);
+  const accuracy = (300*countGreat + 100*count100 + 50*count50) / (300 * totalHits);
+
+  const hasHD = mods.includes('HD'), hasFL = mods.includes('FL');
+  const hasNF = mods.includes('NF'), hasSO = mods.includes('SO');
+  const hasRX = mods.includes('RX'), hasAP = mods.includes('AP');
+
+  // Effective miss count (classic slider accuracy mode)
+  let effMiss = countMiss;
+  if (currentSliderCount > 0) {
+    const fcThreshold = maxCombo - 0.1 * currentSliderCount;
+    if (combo < fcThreshold)
+      effMiss = Math.max(countMiss, fcThreshold / Math.max(1, combo));
+    effMiss = Math.min(count100 + count50 + countMiss, Math.max(countMiss, effMiss));
+  }
+  if (hasRX) {
+    const okM  = 0.75 * Math.max(0, od > 0 ? 1 - od / 13.33 : 1);
+    const mehM = Math.max(0, od > 0 ? 1 - Math.pow(od / 13.33, 5) : 1);
+    effMiss = Math.min(effMiss + count100 * okM + count50 * mehM, totalHits);
+  }
+
+  const lenBonus = 0.95 + 0.4 * Math.min(1, totalHits/2000)
+    + (totalHits > 2000 ? Math.log10(totalHits/2000) * 0.5 : 0);
+
+  // Aim
+  let aim = 0;
+  if (!hasAP) {
+    aim = d2p(aimDiff) * lenBonus;
+    if (effMiss > 0) aim *= missPen(effMiss, aimSC);
+    aim *= comboSc(combo, maxCombo);
+    aim *= accuracy;
+  }
+
+  // Speed
+  let spd = 0;
+  if (!hasRX) {
+    spd = d2p(speedDiff) * lenBonus;
+    if (effMiss > 0) spd *= missPen(effMiss, spdSC);
+    spd *= comboSc(combo, maxCombo);
+    const relDiff   = Math.max(0, totalHits - speedNC);
+    const relGreat  = Math.max(0, countGreat - relDiff);
+    const relOk     = Math.max(0, count100  - Math.max(0, relDiff - countGreat));
+    const relMeh    = Math.max(0, count50   - Math.max(0, relDiff - countGreat - count100));
+    const relAcc    = speedNC > 0 ? (relGreat*6 + relOk*2 + relMeh) / (speedNC*6) : 0;
+    spd *= Math.pow((accuracy + relAcc) / 2, (14.5 - Math.max(od, 0)) / 2);
+  }
+
+  // Accuracy
+  let acc = 0;
+  if (!hasRX) {
+    const objWithAcc = currentHitCircleCount; // classic mode: circles only
+    let betterAcc = 0;
+    if (objWithAcc > 0)
+      betterAcc = Math.max(0, ((countGreat - Math.max(0, totalHits - objWithAcc))*6 + count100*2 + count50) / (objWithAcc*6));
+    acc = Math.pow(1.52163, od) * Math.pow(betterAcc, 24) * 2.83;
+    acc *= Math.min(1.15, Math.pow(objWithAcc / 1000, 0.3));
+    if (hasHD) acc *= 1 + 0.08 * revLerp(ar, 11.5, 10);
+    if (hasFL) acc *= 1.02;
+  }
+
+  // Flashlight
+  let fl = 0;
+  if (hasFL && flDiff > 0) {
+    fl = d2p(flDiff) * lenBonus;
+    if (effMiss > 0)
+      fl *= 0.97 * Math.pow(1 - Math.pow(effMiss/totalHits, 0.775), Math.pow(effMiss, 0.875));
+    fl *= comboSc(combo, maxCombo);
+    fl *= 0.5 + accuracy / 2;
+  }
+
+  // Total
+  let mult = 1.14;
+  if (hasNF) mult *= Math.max(0.9, 1 - 0.02 * effMiss);
+  if (hasSO && totalHits > 0) mult *= 1 - Math.pow(currentSpinnerCount / totalHits, 0.85);
+  if (hasRX) mult *= 0.6;
+
+  return Math.max(0, Math.pow(
+    Math.pow(aim,1.1) + Math.pow(spd,1.1) + Math.pow(acc,1.1) + Math.pow(fl,1.1), 1/1.1
+  ) * mult);
+}
+
+async function calcPP() {
+  if (!currentBmId) return;
+  const modStr   = getModString();
+  const count100 = parseInt(document.getElementById('f-count100').value) || 0;
+  const count50  = parseInt(document.getElementById('f-count50').value)  || 0;
+  const miss     = parseInt(document.getElementById('f-misses').value)   || 0;
+  const comboRaw = document.getElementById('f-combo').value.trim().toUpperCase();
+  const maxComboFallback = currentMaxCombo || 1;
+  const combo    = (comboRaw === 'FC' || comboRaw === '') ? maxComboFallback
+                 : (parseInt(comboRaw) || maxComboFallback);
+  const mods     = MOD_ORDER.filter(k => modStr.includes(k));
+
+  // Fetch difficulty attributes (cached per beatmap+mods)
+  const cacheKey = `${currentBmId}_${modStr}`;
+  let attrs = attrsCache[cacheKey];
+  if (!attrs) {
+    try {
+      const token = await getToken();
+      if (!token) { setPPStatus('no token', 'err'); return; }
+      const res = await fetch(`/proxy/beatmap-attributes/${currentBmId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ ruleset_id: 0, mods: modApiArray(modStr) }),
+      });
+      if (!res.ok) { setPPStatus(`attrs error ${res.status}`, 'err'); return; }
+      const data = await res.json();
+      attrs = data.attributes;
+      if (!attrs) { setPPStatus('no attributes', 'err'); return; }
+      attrsCache[cacheKey] = attrs;
+    } catch { setPPStatus('network error', 'err'); return; }
+  }
+
+  // Compute rate-adjusted AR and OD from stored base values.
+  // The osu! API returns base values; the performance calculator applies
+  // HR/EZ first, then the DT/HT clock rate on top — we must do the same.
+  const clockRate = mods.includes('DT') ? 1.5 : mods.includes('HT') ? 0.75 : 1.0;
+  let adjAR = currentBaseAR, adjOD = currentBaseOD;
+  if (mods.includes('HR')) { adjAR = Math.min(adjAR * 1.4, 10); adjOD = Math.min(adjOD * 1.4, 10); }
+  else if (mods.includes('EZ')) { adjAR /= 2; adjOD /= 2; }
+  if (clockRate !== 1.0) {
+    const arMs = adjAR < 5 ? 1800 - 120 * adjAR : 1200 - 150 * (adjAR - 5);
+    const adjArMs = arMs / clockRate;
+    adjAR = adjArMs > 1200 ? (1800 - adjArMs) / 120 : 5 + (1200 - adjArMs) / 150;
+    adjOD = (80 - (80 - 6 * adjOD) / clockRate) / 6;
+  }
+  attrs = { ...attrs, approach_rate: adjAR, overall_difficulty: adjOD };
+
+  const pp = osuPP(attrs, combo, count100, count50, miss, mods);
+
+  // Derive accuracy for storage
+  const totalHits = currentHitCircleCount + currentSliderCount + currentSpinnerCount;
+  if (totalHits > 0) {
+    const countGreat = Math.max(0, totalHits - count100 - count50 - miss);
+    calculatedAcc = (300*countGreat + 100*count100 + 50*count50) / (300 * totalHits) * 100;
+  }
+
+  document.getElementById('f-pp').value = pp.toFixed(2);
+  setPPStatus('✓', 'ok');
+}
+
+function setFetchStatus(msg, type) {
+  const el = document.getElementById('fetch-status');
+  el.textContent = msg; el.className = 'fetch-status' + (type ? ' ' + type : '');
+}
+
+// ── API Setup ─────────────────────────────────────────────────────────────────
+function openSetup() {
+  const c = getCreds();
+  if (c) { document.getElementById('api-id').value = c.id; document.getElementById('api-secret').value = c.secret; }
+  document.getElementById('setup-modal').classList.add('open');
+}
+function closeSetup() { document.getElementById('setup-modal').classList.remove('open'); }
+async function saveApiCreds() {
+  const id = document.getElementById('api-id').value.trim();
+  const secret = document.getElementById('api-secret').value.trim();
+  if (!id || !secret) { alert('Enter both Client ID and Client Secret.'); return; }
+  const btn = document.getElementById('save-api-btn');
+  btn.textContent = 'Testing...'; btn.disabled = true;
+  osuToken = null;
+  localStorage.setItem(CREDS_KEY, JSON.stringify({ id, secret }));
+  const token = await getToken();
+  btn.textContent = 'Save & connect'; btn.disabled = false;
+  if (token) { updateApiStatus(); closeSetup(); showToast('Connected to osu! API ✓'); }
+  else { localStorage.removeItem(CREDS_KEY); updateApiStatus(); alert('Could not connect. Double-check your Client ID and Secret.'); }
+}
+function updateApiStatus() {
+  const el = document.getElementById('api-status-el');
+  const c = getCreds();
+  el.className = c ? 'api-status connected' : 'api-status';
+  el.innerHTML = `<span class="dot" style="${c ? '' : 'background:var(--orange)'}"></span> ${c ? 'osu! API connected' : 'API not set up'}`;
+}
+
+// ── Play CRUD ─────────────────────────────────────────────────────────────────
+function openAddModal() {
+  editingId = null; currentBmId = null; currentMaxCombo = null; calculatedAcc = null; currentCoverUrl = null;
+  currentHitCircleCount = 0; currentSliderCount = 0; currentSpinnerCount = 0;
+  document.getElementById('modal-title').textContent = 'Add play';
+  ['f-link','f-beatmap','f-pp','f-combo','f-count100','f-count50','f-misses'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-first-place').checked = false;
+  document.getElementById('f-combo').placeholder = 'FC or 578x';
+  document.getElementById('fetch-btn').style.display = '';
+  setSelectedMods(''); renderModPicker();
+  setFetchStatus('', '');
+  setPPStatus('', '');
+  document.getElementById('save-error').textContent = '';
+  document.getElementById('play-modal').classList.add('open');
+  setTimeout(() => document.getElementById('f-link').focus(), 60);
+}
+function editPlay(id) {
+  const p = plays.find(x => x.id === id); if (!p) return;
+  editingId = id;
+  currentBmId = p.bmId || null;
+  calculatedAcc = p.acc || null;
+  currentCoverUrl = p.coverUrl || null;
+  currentMaxCombo = p.maxCombo || null;
+  document.getElementById('modal-title').textContent = 'Edit play';
+  document.getElementById('f-link').value = p.link || '';
+  document.getElementById('f-beatmap').value = p.beatmap || '';
+  document.getElementById('f-pp').value = p.pp;
+  setSelectedMods(p.mods || ''); renderModPicker();
+  document.getElementById('f-combo').value = p.combo || '';
+  document.getElementById('f-count100').value = p.count100 ?? '';
+  document.getElementById('f-count50').value  = p.count50  ?? '';
+  document.getElementById('f-misses').value   = p.miss     ?? '';
+  document.getElementById('fetch-btn').style.display = 'none';
+  document.getElementById('f-first-place').checked = !!p.firstPlace;
+  document.getElementById('save-error').textContent = '';
+  setFetchStatus('', '');
+  setPPStatus('', '');
+  document.getElementById('play-modal').classList.add('open');
+  if (p.link) fetchBeatmap();
+}
+function closeModal() { document.getElementById('play-modal').classList.remove('open'); editingId = null; }
+function savePlay() {
+  const beatmap  = document.getElementById('f-beatmap').value.trim();
+  const pp       = parseFloat(document.getElementById('f-pp').value);
+  const mods     = getModString();
+  const combo    = document.getElementById('f-combo').value.trim();
+  const link     = document.getElementById('f-link').value.trim();
+  const count100 = parseInt(document.getElementById('f-count100').value) || 0;
+  const count50  = parseInt(document.getElementById('f-count50').value)  || 0;
+  const miss     = parseInt(document.getElementById('f-misses').value)   || 0;
+  const acc      = calculatedAcc ?? (editingId ? (plays.find(x => x.id === editingId)?.acc ?? null) : null);
+
+  const saveErr = s => { document.getElementById('save-error').textContent = s; };
+  saveErr('');
+  if (!beatmap) { saveErr('Please fill in or fetch the beatmap name.'); return; }
+  if (isNaN(pp)) { saveErr('Please enter or calculate the PP value.'); return; }
+  if (miss > 0 && !combo) { saveErr('You have misses — please enter your actual combo.'); return; }
+  const comboNum = parseInt(combo);
+  if (currentMaxCombo && !isNaN(comboNum) && combo.toUpperCase() !== 'FC' && comboNum > currentMaxCombo) {
+    saveErr(`Combo ${comboNum}x exceeds this map's max combo (${currentMaxCombo}x).`); return;
+  }
+
+  const firstPlace = document.getElementById('f-first-place').checked;
+  const fields = { beatmap, pp, mods, acc, combo, link, count100, count50, miss, bmId: currentBmId, coverUrl: currentCoverUrl, maxCombo: currentMaxCombo, firstPlace };
+  if (editingId) {
+    const p = plays.find(x => x.id === editingId);
+    if (p) Object.assign(p, fields);
+  } else {
+    plays.push({ id: uid(), ...fields });
+  }
+  save(); closeModal(); renderModPills(); renderTable();
+  showToast(editingId ? 'Play updated!' : 'Play added!');
+}
+function deletePlay(id) {
+  if (!confirm('Remove this play?')) return;
+  plays = plays.filter(p => p.id !== id);
+  save(); renderModPills(); renderTable();
+}
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+function isFC(p) { return (p.combo || '').trim().toUpperCase() === 'FC'; }
+function calcTotals() {
+  const sorted = [...plays].sort((a, b) => b.pp - a.pp);
+  let wSum = 0, accSum = 0, accW = 0;
+  sorted.forEach((p, i) => {
+    const w = Math.pow(0.95, i);
+    p._weight = w * 100; p._weighted = p.pp * w; wSum += p._weighted;
+    if (i < 100) { accSum += p.acc * w; accW += w; }
+  });
+  const bonus = 416.6667 * (1 - Math.pow(0.9994, Math.min(plays.length, 200)));
+  return { sorted, total: wSum + bonus, bonus, avgAcc: accW > 0 ? accSum / accW : null, fcs: plays.filter(p => p.firstPlace).length };
+}
+function updateStats() {
+  const { total, bonus, avgAcc, fcs } = calcTotals();
+  document.getElementById('s-total').textContent = Math.round(total).toLocaleString() + 'pp';
+  document.getElementById('s-bonus').textContent = '+' + bonus.toFixed(2) + ' bonus';
+  document.getElementById('s-count').textContent = plays.length;
+  document.getElementById('s-acc').textContent = avgAcc !== null ? (Math.floor(avgAcc * 100) / 100).toFixed(2) + '%' : '—';
+  document.getElementById('s-fc').textContent = fcs;
+  document.getElementById('s-fc-sub').textContent = fcs + ' #1 score' + (fcs !== 1 ? 's' : '');
+}
+
+// ── Filters & Sort ────────────────────────────────────────────────────────────
+function renderModPills() {
+  const pills = [
+    `<div class="pill${modFilters.has('NM') ? ' active' : ''}" onclick="toggleModFilter('NM')">NM</div>`,
+    ...MOD_ORDER.map(k =>
+      `<div class="pill${modFilters.has(k) ? ' active' : ''}" onclick="toggleModFilter('${k}')">${k}</div>`
+    )
+  ];
+  document.getElementById('mod-pills').innerHTML = pills.join('');
+}
+function toggleModFilter(key) {
+  if (modFilters.has(key)) modFilters.delete(key);
+  else modFilters.add(key);
+  document.getElementById('f-all').classList.toggle('active', modFilters.size === 0);
+  renderModPills(); renderTable();
+}
+function clearModFilter() {
+  modFilters.clear();
+  document.getElementById('f-all').classList.add('active');
+  renderModPills(); renderTable();
+}
+function toggleFC() { fcFilter = !fcFilter; if (fcFilter) missFilter = false; document.getElementById('f-fc').classList.toggle('active', fcFilter); document.getElementById('f-miss').classList.toggle('active', missFilter); renderTable(); }
+function toggleMiss() { missFilter = !missFilter; if (missFilter) fcFilter = false; document.getElementById('f-fc').classList.toggle('active', fcFilter); document.getElementById('f-miss').classList.toggle('active', missFilter); renderTable(); }
+function toggleFirst() { firstFilter = !firstFilter; document.getElementById('f-first').classList.toggle('active', firstFilter); renderTable(); }
+function getFiltered(sorted) {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  return sorted.filter(p => {
+    if (modFilters.size > 0) {
+      const filterStr = modFilters.has('NM') ? 'NM'
+        : (MOD_ORDER.filter(k => modFilters.has(k)).join('') || 'NM');
+      if ((p.mods || 'NM') !== filterStr) return false;
+    }
+    if (fcFilter && !isFC(p)) return false;
+    if (missFilter && isFC(p)) return false;
+    if (firstFilter && !p.firstPlace) return false;
+    if (q && !(p.beatmap || '').toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+function setSort(key) {
+  if (sortKey === key) sortDir *= -1; else { sortKey = key; sortDir = 1; }
+  document.querySelectorAll('th').forEach(t => { t.classList.remove('sorted'); t.textContent = t.textContent.replace(/ [↑↓]$/, ''); });
+  const el = document.getElementById('th-' + key);
+  if (el) { el.classList.add('sorted'); el.textContent += sortDir === 1 ? ' ↓' : ' ↑'; }
+  renderTable();
+}
+function sortPlays(arr) {
+  return [...arr].sort((a, b) => {
+    let av, bv;
+    if (sortKey === 'weighted') { av = a._weighted; bv = b._weighted; }
+    else if (sortKey === 'pp') { av = a.pp; bv = b.pp; }
+    else if (sortKey === 'beatmap') { av = (a.beatmap||'').toLowerCase(); bv = (b.beatmap||'').toLowerCase(); }
+    else if (sortKey === 'weight') { av = a._weight; bv = b._weight; }
+    else if (sortKey === 'acc') { av = a.acc; bv = b.acc; }
+    else { av = a._weighted; bv = b._weighted; }
+    return av < bv ? sortDir : av > bv ? -sortDir : 0;
+  });
+}
+
+// ── Grade ─────────────────────────────────────────────────────────────────────
+const GRADE_FILE = { SS:'SS', SSH:'SS-Silver', S:'S', SH:'S-Silver', A:'A', B:'B', C:'C', D:'D' };
+function calcGrade(acc, miss, mods) {
+  const silver = mods && (mods.includes('HD') || mods.includes('FL'));
+  let g;
+  if (acc >= 100)                                    g = silver ? 'SSH' : 'SS';
+  else if (acc >= 90 && miss === 0)                  g = silver ? 'SH'  : 'S';
+  else if ((acc >= 80 && miss === 0) || acc >= 90)   g = 'A';
+  else if ((acc >= 70 && miss === 0) || acc >= 80)   g = 'B';
+  else if (acc >= 60)                                g = 'C';
+  else                                               g = 'D';
+  const f = GRADE_FILE[g];
+  return `<img class="grade-img" src="${OSU_ASSETS}/score-ranks-v2019/GradeSmall-${f}.svg" title="${g}" alt="${g}">`;
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+const OSU_ASSETS = 'https://raw.githubusercontent.com/ppy/osu-web/master/public/images/badges';
+const OSU_SKIN = 'https://raw.githubusercontent.com/emersion/osu-skin-default/master';
+const MOD_SKIN_FILE = { EZ:'easy', NF:'nofail', HT:'halftime', HR:'hardrock', SD:'suddendeath', PF:'perfect',
+  DT:'doubletime', NC:'nightcore', HD:'hidden', FL:'flashlight', RX:'relax', AP:'autoplay', SO:'spunout' };
+const MOD_NAMES = ['EZ','NF','HT','HR','SD','PF','DT','NC','HD','FL','RX','AP','SO'];
+function modBadge(m) {
+  const u = (m || 'NM').toUpperCase();
+  if (u === 'NM') return '';
+  const split = (() => {
+    const parts = []; let rem = u;
+    for (const name of MOD_NAMES) { if (rem.includes(name)) { parts.push(name); rem = rem.replace(name, ''); } }
+    if (rem.length > 0) parts.push(rem);
+    return parts;
+  })();
+  return `<div class="mod-icons">${split.map(p => {
+    const f = MOD_SKIN_FILE[p];
+    return f ? `<img class="mod-icon" src="${OSU_SKIN}/selection-mod-${f}@2x.png" title="${p}" alt="${p}">`
+             : `<span style="font-size:9px;font-weight:800;color:var(--text2);padding:2px 4px;background:var(--bg4);border-radius:4px">${p}</span>`;
+  }).join('')}</div>`;
+}
+function comboTag(p) {
+  const c = (p.combo || '').trim();
+  const max = p.maxCombo;
+  const maxSuffix = max ? `/${max}x` : 'x';
+
+  if (!c) return max
+    ? `<span class="fc-tag">${max}${maxSuffix}</span>`
+    : '<span style="color:var(--text3)">—</span>';
+
+  if (c.toUpperCase() === 'FC') return max
+    ? `<span class="fc-tag">${max}${maxSuffix}</span>`
+    : '<span class="fc-tag">FC</span>';
+
+  if (c.toLowerCase().includes('sb')) return `<span class="sb-tag">${esc(c)}</span>`;
+  if (c.toLowerCase().includes('miss')) return `<span class="miss-tag">${esc(c)}</span>`;
+
+  const num = c.match(/^(\d+)x?$/i);
+  return num && max
+    ? `<span class="combo-val" style="font-size:12px">${num[1]}${maxSuffix}</span>`
+    : `<span class="combo-val" style="font-size:12px">${esc(c)}</span>`;
+}
+function renderTable() {
+  const { sorted } = calcTotals();
+  const filtered = getFiltered(sorted);
+  const displayed = sortPlays(filtered);
+  const tbody = document.getElementById('play-tbody');
+  updateStats();
+  if (displayed.length === 0) {
+    const msg = plays.length === 0
+      ? 'No plays yet. <span class="hint-link" onclick="openAddModal()">Add your first play →</span>'
+      : 'No plays match your filters.';
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="big">🎵</div><p>${msg}</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = displayed.map(p => {
+    const globalRank = sorted.findIndex(s => s.id === p.id) + 1;
+    const acc = Number(p.acc) || 0;
+    const miss = Number(p.miss) || 0;
+    const nameCell = p.link
+      ? `<a href="${esc(p.link)}" target="_blank" style="color:var(--text);text-decoration:none;" onmouseover="this.style.color='var(--pink)'" onmouseout="this.style.color='var(--text)'">${esc(p.beatmap)}</a>`
+      : esc(p.beatmap);
+    const coverStyle = p.coverUrl ? ` class="has-cover" style="--row-bg:url('${p.coverUrl}')"` : '';
+    return `<tr${coverStyle}>
+      <td><span class="rank-num">${globalRank}</span></td>
+      <td><span class="pp-w">${p._weighted.toFixed(0)}</span></td>
+      <td><span class="pp-raw">${Number(p.pp).toFixed(0)}</span></td>
+      <td style="max-width:260px" title="${esc(p.beatmap)}">${nameCell}</td>
+      <td>${modBadge(p.mods)}</td>
+      <td><span class="weight-val">${p._weight.toFixed(2)}%</span></td>
+      <td><div class="acc-cell"><span class="acc-num">${(Math.floor(acc * 100) / 100).toFixed(2)}%</span>${calcGrade(acc, miss, p.mods)}</div></td>
+      <td>${comboTag(p)}</td>
+      <td><div class="act-btns">
+        <button class="btn btn-sm btn-icon" onclick="editPlay('${p.id}')" title="Edit">✎</button>
+        <button class="btn btn-sm btn-icon" style="color:var(--red)" onclick="deletePlay('${p.id}')" title="Delete">✕</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Import/Export ─────────────────────────────────────────────────────────────
+function exportData() {
+  const blob = new Blob([JSON.stringify(plays, null, 2)], { type: 'application/json' });
+  Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: 'ppsheet-backup.json' }).click();
+}
+function importFile(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!Array.isArray(data)) throw new Error('Expected array');
+      plays = data.map(p => ({ ...p, id: p.id || uid() }));
+      save(); renderModPills(); renderTable(); showToast('Imported ' + data.length + ' plays!');
+    } catch (err) { alert('Invalid JSON: ' + err.message); }
+  };
+  reader.readAsText(file); e.target.value = '';
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  let t = document.getElementById('_toast');
+  if (!t) { t = document.createElement('div'); t.id = '_toast'; t.style.cssText = 'position:fixed;bottom:20px;right:20px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 16px;font-size:13px;color:var(--text);opacity:0;transform:translateY(6px);transition:all 0.2s;pointer-events:none;z-index:999;'; document.body.appendChild(t); }
+  t.textContent = msg; t.style.opacity = '1'; t.style.transform = 'translateY(0)';
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateY(6px)'; }, 2200);
+}
+
+// ── Events ────────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeModal(); closeSetup(); }
+  if (e.key === 'Enter' && document.getElementById('play-modal').classList.contains('open')) savePlay();
+});
+document.getElementById('play-modal').addEventListener('click', e => { if (e.target.id === 'play-modal') closeModal(); });
+document.getElementById('setup-modal').addEventListener('click', e => { if (e.target.id === 'setup-modal') closeSetup(); });
+
+load();
+renderModPicker();
+
+// Heartbeat — keeps the local server alive; server auto-exits when pings stop
+if (isLocalServer()) setInterval(() => fetch('/ping').catch(() => {}), 4000);
+</script>
+</body>
+</html>
