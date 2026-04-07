@@ -219,7 +219,6 @@
           <th id="th-pp" onclick="setSort('pp')" style="width:72px">Raw PP</th>
           <th id="th-beatmap" onclick="setSort('beatmap')">Beatmap</th>
           <th style="width:72px">Mods</th>
-          <th id="th-weight" onclick="setSort('weight')" style="width:70px">Weight</th>
           <th id="th-acc" onclick="setSort('acc')" style="width:130px">Accuracy</th>
           <th style="width:110px">Combo</th>
           <th style="width:60px"></th>
@@ -1093,7 +1092,6 @@ function renderTable() {
       <td><span class="pp-raw">${Number(p.pp).toFixed(0)}</span></td>
       <td style="max-width:260px" title="${esc(p.beatmap)}">${nameCell}${p.loved ? '<span style="color:#ff66aa;margin-left:6px;" title="Loved map">♥</span>' : ''}</td>
       <td>${modBadge(p.mods)}</td>
-      <td><span class="weight-val">${p._weight.toFixed(2)}%</span></td>
       <td><div class="acc-cell"><span class="acc-num">${(Math.floor(acc * 100) / 100).toFixed(2)}%</span>${calcGrade(acc, miss, p.mods)}</div></td>
       <td>${comboTag(p)}</td>
       <td><div class="act-btns">
