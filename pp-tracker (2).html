@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>pp sheet</title>
+<title>PPSheet</title>
+<link rel="icon" type="image/png" href="/logo.png">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&family=Inconsolata:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -51,6 +52,10 @@
   .pill:hover { border-color: var(--border2); color: var(--text); }
   .pill.active { background: var(--pink); border-color: var(--pink); color: #fff; }
   .sep { width: 1px; height: 20px; background: var(--border); margin: 0 2px; flex-shrink: 0; }
+  .mod-filter-btn { padding: 1px; border-radius: 6px; border: 2px solid transparent; background: transparent; cursor: pointer; user-select: none; }
+  .mod-filter-btn img { width: 28px; height: 28px; display: block; filter: brightness(0.4) saturate(0.5); transition: filter 0.12s; }
+  .mod-filter-btn:hover img { filter: brightness(0.7) saturate(0.8); }
+  .mod-filter-btn.active img { filter: brightness(1) saturate(1); }
 
   .table-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
   table { width: 100%; border-collapse: collapse; position: relative; }
@@ -91,15 +96,23 @@
   .form-row select option { background: var(--bg3); }
   .form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .form-3col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-  .form-4col { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .form-4col { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
   .pp-calc-status { font-size: 10px; font-weight: 400; text-transform: none; letter-spacing: 0; margin-left: 6px; vertical-align: middle; }
   .pp-calc-status.loading { color: var(--text3); }
   .pp-calc-status.ok { color: var(--green); }
   .pp-calc-status.err { color: var(--red); }
-  .mod-picker { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
-  .mod-btn { font-family: var(--mono); font-size: 11px; font-weight: 700; padding: 5px 11px; border-radius: 5px; border: 1px solid var(--border2); background: var(--bg4); color: var(--text2); cursor: pointer; transition: all 0.12s; user-select: none; }
-  .mod-btn:hover { border-color: var(--pink); color: var(--text); }
-  .mod-btn.active { background: var(--pink); border-color: var(--pink); color: #fff; }
+  .mod-picker { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+  .mod-group { display: flex; flex-wrap: wrap; gap: 6px; }
+  .mod-btn { padding: 2px; border-radius: 8px; border: 2px solid transparent; background: transparent; cursor: pointer; user-select: none; transition: opacity 0.15s; }
+  .mod-btn img { width: 48px; height: 48px; display: block; filter: brightness(0.45) saturate(0.6); transition: transform 0.15s ease, filter 0.15s ease; }
+  .mod-btn:hover img { filter: brightness(0.75) saturate(0.85); }
+  .mod-btn.active img { filter: brightness(1) saturate(1); transform: scale(1.12) rotate(var(--tilt, -5deg)); }
+  @keyframes modTilt {
+    0%   { transform: scale(1)    rotate(0deg); }
+    60%  { transform: scale(1.12) rotate(calc(var(--tilt, -6deg) * 1.4)); }
+    100% { transform: scale(1.12) rotate(var(--tilt, -6deg)); }
+  }
+  .mod-btn.active.popping img { animation: modTilt 0.25s ease-out forwards; }
   .mods-string { font-family: var(--mono); font-size: 11px; color: var(--text3); font-weight: 400; text-transform: none; letter-spacing: 0; margin-left: 8px; }
   @media (max-width: 700px) { .form-4col { grid-template-columns: 1fr 1fr; } }
   .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
@@ -156,8 +169,8 @@
   <div id="api-status-el" class="api-status"></div>
   <div class="topbar-right">
     <button class="btn" onclick="openSetup()">⚙ API Setup</button>
-    <button class="btn" onclick="exportData()">Export</button>
-    <label class="btn" style="cursor:pointer;">Import <input type="file" accept=".json" style="display:none" onchange="importFile(event)"></label>
+    <button class="btn" onclick="exportData()" style="display:none">Export</button>
+    <label class="btn" style="display:none;cursor:pointer;">Import <input type="file" accept=".json" style="display:none" onchange="importFile(event)"></label>
     <button class="btn btn-pink" onclick="openAddModal()">+ Add play</button>
   </div>
 </div>
@@ -170,19 +183,16 @@
       <div class="stat-sub" id="s-bonus">+0 bonus</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">Plays logged</div>
+      <div class="stat-label">Total plays</div>
       <div class="stat-val" id="s-count">0</div>
-      <div class="stat-sub">out of 200 max</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Avg accuracy</div>
       <div class="stat-val" id="s-acc">—</div>
-      <div class="stat-sub">weighted top 100</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">First place</div>
       <div class="stat-val" id="s-fc">—</div>
-      <div class="stat-sub" id="s-fc-sub">— #1 scores</div>
     </div>
   </div>
 
@@ -192,12 +202,12 @@
       <input id="search-input" placeholder="Search beatmap..." oninput="renderTable()" />
     </div>
     <div class="sep"></div>
-    <div class="pill active" id="f-all" onclick="clearModFilter()">All</div>
     <div id="mod-pills" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;"></div>
     <div class="sep"></div>
-    <div class="pill" id="f-fc" onclick="toggleFC()">FC only</div>
-    <div class="pill" id="f-miss" onclick="toggleMiss()">Misses</div>
-    <div class="pill" id="f-first" onclick="toggleFirst()">1st place</div>
+    <div class="pill" id="f-fc" onclick="toggleFC()">FC</div>
+    <div class="pill" id="f-miss" onclick="toggleMiss()">Non-FC</div>
+    <div class="pill" id="f-first" onclick="toggleFirst()">1st</div>
+    <div class="pill" id="f-loved-pill" onclick="toggleLovedFilter()">♥ Loved</div>
   </div>
 
   <div class="table-wrap">
@@ -225,7 +235,7 @@
 <div class="modal-bg" id="play-modal">
 <div class="modal">
   <h2 id="modal-title">Add play</h2>
-  <p class="modal-sub">Paste the osu! beatmap link to auto-fill the name, then fill in your play details.</p>
+  <p class="modal-sub">Paste the osu! beatmap link to get the map data.</p>
 
   <div class="link-row">
     <div class="form-row">
@@ -251,19 +261,23 @@
   <div class="form-4col">
     <div class="form-row">
       <label>Combo</label>
-      <input id="f-combo" type="text" placeholder="FC or 578x" oninput="clampCombo(); schedulePPCalc()" />
+      <input id="f-combo" type="text" placeholder="FC" oninput="clampCombo(); schedulePPCalc()" />
+    </div>
+    <div class="form-row">
+      <label>Accuracy</label>
+      <input id="f-acc-input" type="number" placeholder="100%" min="0" max="100" step="0.01" oninput="onAccuracyInput()" />
     </div>
     <div class="form-row">
       <label>100 count</label>
-      <input id="f-count100" type="number" placeholder="0" min="0" step="1" oninput="schedulePPCalc()" />
+      <input id="f-count100" type="number" placeholder="0" min="0" step="1" oninput="onCountInput()" />
     </div>
     <div class="form-row">
       <label>50 count</label>
-      <input id="f-count50" type="number" placeholder="0" min="0" step="1" oninput="schedulePPCalc()" />
+      <input id="f-count50" type="number" placeholder="0" min="0" step="1" oninput="onCountInput()" />
     </div>
     <div class="form-row">
       <label>Misses</label>
-      <input id="f-misses" type="number" placeholder="0" min="0" step="1" oninput="schedulePPCalc()" />
+      <input id="f-misses" type="number" placeholder="0" min="0" step="1" oninput="onCountInput()" />
     </div>
   </div>
 
@@ -272,7 +286,7 @@
     <input id="f-pp" type="number" placeholder="auto-calculated or enter manually" min="0" step="0.01" />
   </div>
 
-  <div class="form-row" style="margin-top:4px;">
+  <div class="form-row" style="margin-top:4px;display:flex;gap:20px;">
     <label style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;font-size:13px;color:var(--text2);">
       <input type="checkbox" id="f-first-place" style="accent-color:var(--pink);width:14px;height:14px;" />
       #1 on leaderboard
@@ -282,6 +296,18 @@
   <div class="modal-actions">
     <button class="btn" onclick="closeModal()">Cancel</button>
     <button class="btn btn-pink" onclick="savePlay()">Save play</button>
+  </div>
+</div>
+</div>
+
+<!-- Delete confirm modal -->
+<div class="modal-bg" id="delete-modal">
+<div class="modal" style="max-width:340px;">
+  <h2 style="margin-bottom:4px;">Remove play?</h2>
+  <p class="modal-sub">This can't be undone.</p>
+  <div class="modal-actions">
+    <button class="btn" onclick="closeDeleteModal()">Cancel</button>
+    <button class="btn btn-primary" onclick="confirmDelete()" style="background:var(--red);border-color:var(--red);color:#fff;">Remove</button>
   </div>
 </div>
 </div>
@@ -319,7 +345,7 @@
 <script>
 let plays = [];
 let sortKey = 'weighted', sortDir = 1;
-let modFilters = new Set(), fcFilter = false, missFilter = false, firstFilter = false;
+let modFilters = new Set(), fcFilter = false, missFilter = false, firstFilter = false, lovedFilter = false;
 let editingId = null;
 let osuToken = null;
 let currentBmId = null;
@@ -331,6 +357,7 @@ let currentBaseAR = 0;
 let currentBaseOD = 0;
 let calculatedAcc = null;
 let currentCoverUrl = null;
+let currentBeatmapLoved = false;
 let ppCalcTimer = null;
 let attrsCache = {}; // key: `${bmId}_${modStr}` → difficulty attributes
 const PLAYS_KEY = 'ppsheet_v2_plays';
@@ -352,10 +379,11 @@ function getCreds() { try { return JSON.parse(localStorage.getItem(CREDS_KEY)) |
 
 function isLocalServer() { return location.protocol === 'http:' && location.hostname === 'localhost'; }
 
+let lastTokenError = '';
 async function getToken() {
   const creds = getCreds(); if (!creds) return null;
   if (osuToken && osuToken.expires > Date.now()) return osuToken.access_token;
-  const body = JSON.stringify({ client_id: creds.id, client_secret: creds.secret, grant_type: 'client_credentials', scope: 'public' });
+  const body = JSON.stringify({ client_id: parseInt(creds.id), client_secret: creds.secret, grant_type: 'client_credentials', scope: 'public' });
   const headers = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
   // Use local proxy when running via server.py, otherwise fall back to CORS proxies
   const endpoints = isLocalServer()
@@ -368,12 +396,16 @@ async function getToken() {
   for (const attempt of endpoints) {
     try {
       const res = await attempt();
-      if (!res.ok) continue;
+      if (!res.ok) {
+        try { const e = await res.json(); lastTokenError = `HTTP ${res.status}: ${JSON.stringify(e)}`; } catch { lastTokenError = `HTTP ${res.status}`; }
+        continue;
+      }
       const d = await res.json();
       if (!d.access_token) continue;
       osuToken = { access_token: d.access_token, expires: Date.now() + (d.expires_in - 60) * 1000 };
+      lastTokenError = '';
       return osuToken.access_token;
-    } catch { continue; }
+    } catch (ex) { lastTokenError = String(ex); continue; }
   }
   return null;
 }
@@ -423,8 +455,9 @@ async function fetchBeatmap() {
     currentBaseAR = data.ar || 0;
     currentBaseOD = data.accuracy || 0; // osu! API uses 'accuracy' for OD
     currentCoverUrl = data.beatmapset?.covers?.['cover@2x'] || data.beatmapset?.covers?.cover || null;
+    currentBeatmapLoved = data.beatmapset?.status === 'loved';
     const comboInput = document.getElementById('f-combo');
-    comboInput.placeholder = currentMaxCombo ? `max ${currentMaxCombo}x` : 'FC or 578x';
+    comboInput.placeholder = currentMaxCombo ? `${currentMaxCombo}x` : 'FC';
     schedulePPCalc();
   } catch { setFetchStatus('Network error. Check your connection.', 'err'); }
   finally { document.getElementById('fetch-btn').disabled = false; }
@@ -432,16 +465,27 @@ async function fetchBeatmap() {
 
 // ── Mod picker ────────────────────────────────────────────────────────────────
 const MOD_LIST = [
-  { key: 'EZ', label: 'Easy',        conflicts: ['HR'] },
-  { key: 'NF', label: 'No Fail',     conflicts: [] },
-  { key: 'HT', label: 'Half Time',   conflicts: ['DT'] },
-  { key: 'DT', label: 'Double Time', conflicts: ['HT'] },
-  { key: 'HR', label: 'Hard Rock',   conflicts: ['EZ'] },
-  { key: 'HD', label: 'Hidden',      conflicts: [] },
-  { key: 'FL', label: 'Flashlight',  conflicts: [] },
-  { key: 'RX', label: 'Relax',       conflicts: ['AP'] },
-  { key: 'AP', label: 'Autopilot',   conflicts: ['RX'] },
-  { key: 'SO', label: 'Spun Out',    conflicts: [] },
+  { key: 'EZ', label: 'Easy',          conflicts: ['HR'] },
+  { key: 'NF', label: 'No Fail',       conflicts: ['SD', 'PF'] },
+  { key: 'HT', label: 'Half Time',     conflicts: ['DT', 'NC'] },
+  { key: 'DT', label: 'Double Time',   conflicts: ['HT'] },
+  { key: 'NC', label: 'Nightcore',     conflicts: ['HT'] },
+  { key: 'HR', label: 'Hard Rock',     conflicts: ['EZ'] },
+  { key: 'SD', label: 'Sudden Death',  conflicts: ['NF'] },
+  { key: 'PF', label: 'Perfect',       conflicts: ['NF'] },
+  { key: 'HD', label: 'Hidden',        conflicts: [] },
+  { key: 'FL', label: 'Flashlight',    conflicts: [] },
+  { key: 'RX', label: 'Relax',         conflicts: ['AP'] },
+  { key: 'AP', label: 'Autopilot',     conflicts: ['RX'] },
+  { key: 'SO', label: 'Spun Out',      conflicts: [] },
+];
+// Keys that cycle through states on repeated clicks: base → upgraded → off
+const MOD_CYCLES = { DT: ['DT', 'NC'], SD: ['SD', 'PF'] };
+const MOD_TILTS = { EZ:-6, NF:-6, HT:-6, HR:-6, DT:-6, NC:-6, SD:-6, PF:-6, HD:-6, FL:-6, RX:-6, AP:-6, SO:-6 };
+const MOD_GROUPS = [
+  ['EZ', 'NF', 'HT'],
+  ['HR', 'SD', 'DT', 'HD', 'FL'],
+  ['RX', 'AP', 'SO'],
 ];
 const MOD_ORDER = MOD_LIST.map(m => m.key);
 let selectedMods = new Set();
@@ -460,23 +504,63 @@ function setSelectedMods(modStr) {
 }
 
 function toggleMod(key) {
-  if (selectedMods.has(key)) {
-    selectedMods.delete(key);
+  const cycle = MOD_CYCLES[key];
+  let activating = false;
+  if (cycle) {
+    const currentIdx = cycle.findIndex(k => selectedMods.has(k));
+    cycle.forEach(k => selectedMods.delete(k));
+    if (currentIdx === -1) {
+      // none active → select base
+      MOD_LIST.find(m => m.key === cycle[0])?.conflicts.forEach(c => selectedMods.delete(c));
+      selectedMods.add(cycle[0]);
+      activating = true;
+    } else if (currentIdx < cycle.length - 1) {
+      // advance to next in cycle
+      selectedMods.add(cycle[currentIdx + 1]);
+      activating = true;
+    }
+    // last in cycle → deselect (already removed)
   } else {
-    const mod = MOD_LIST.find(m => m.key === key);
-    mod.conflicts.forEach(c => selectedMods.delete(c));
-    selectedMods.add(key);
+    if (selectedMods.has(key)) {
+      selectedMods.delete(key);
+    } else {
+      MOD_LIST.find(m => m.key === key)?.conflicts.forEach(c => selectedMods.delete(c));
+      selectedMods.add(key);
+      activating = true;
+    }
   }
   renderModPicker();
+  if (activating) {
+    const btn = document.querySelector(`.mod-btn[data-key="${key}"]`);
+    if (btn) {
+      btn.classList.remove('popping');
+      void btn.offsetWidth;
+      btn.classList.add('popping');
+      btn.addEventListener('animationend', () => btn.classList.remove('popping'), { once: true });
+    }
+  }
   schedulePPCalc();
 }
 
 function renderModPicker() {
   const picker = document.getElementById('mod-picker');
   if (!picker) return;
-  picker.innerHTML = MOD_LIST.map(m =>
-    `<button type="button" class="mod-btn${selectedMods.has(m.key) ? ' active' : ''}" onclick="toggleMod('${m.key}')">${m.key}</button>`
-  ).join('');
+  picker.innerHTML = MOD_GROUPS.map(group => {
+    const btns = group.map(key => {
+      const cycle = MOD_CYCLES[key];
+      const activeVariant = cycle ? cycle.find(k => selectedMods.has(k)) : null;
+      const displayKey = activeVariant || key;
+      const isActive = !!activeVariant || selectedMods.has(key);
+      const m = MOD_LIST.find(x => x.key === displayKey);
+      const f = MOD_SKIN_FILE[displayKey];
+      const inner = f
+        ? `<img src="${OSU_SKIN}/selection-mod-${f}@2x.png" title="${m.label}" alt="${displayKey}">`
+        : `<span style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text2);padding:4px 8px;display:block">${displayKey}</span>`;
+      const tilt = MOD_TILTS[displayKey] || -5;
+      return `<button type="button" class="mod-btn${isActive ? ' active' : ''}" data-key="${key}" style="--tilt:${tilt}deg" onclick="toggleMod('${key}')">${inner}</button>`;
+    }).join('');
+    return `<div class="mod-group">${btns}</div>`;
+  }).join('');
   const display = document.getElementById('mods-string-display');
   if (display) display.textContent = getModString();
 }
@@ -490,6 +574,36 @@ function setPPStatus(msg, type) {
   const el = document.getElementById('pp-calc-status');
   el.textContent = msg;
   el.className = 'pp-calc-status' + (type ? ' ' + type : '');
+}
+
+function getTotalObjects() {
+  return currentHitCircleCount + currentSliderCount + currentSpinnerCount;
+}
+
+function onAccuracyInput() {
+  const N = getTotalObjects();
+  const acc = parseFloat(document.getElementById('f-acc-input').value);
+  if (!N || isNaN(acc)) { schedulePPCalc(); return; }
+  const count50  = parseInt(document.getElementById('f-count50').value)  || 0;
+  const misses   = parseInt(document.getElementById('f-misses').value)   || 0;
+  // Solve: count100 = (300N(1-acc/100) - 250*count50 - 300*misses) / 200
+  const count100 = Math.round((300 * N * (1 - acc / 100) - 250 * count50 - 300 * misses) / 200);
+  document.getElementById('f-count100').value = Math.max(0, count100);
+  schedulePPCalc();
+}
+
+function onCountInput() {
+  const N = getTotalObjects();
+  const count100 = parseInt(document.getElementById('f-count100').value) || 0;
+  const count50  = parseInt(document.getElementById('f-count50').value)  || 0;
+  const misses   = parseInt(document.getElementById('f-misses').value)   || 0;
+  if (N > 0) {
+    const count300 = Math.max(0, N - count100 - count50 - misses);
+    const acc = (300 * count300 + 100 * count100 + 50 * count50) / (300 * N) * 100;
+    const accEl = document.getElementById('f-acc-input');
+    accEl.value = Math.min(100, Math.max(0, acc)).toFixed(2);
+  }
+  schedulePPCalc();
 }
 
 function clampCombo() {
@@ -699,7 +813,7 @@ async function saveApiCreds() {
   const token = await getToken();
   btn.textContent = 'Save & connect'; btn.disabled = false;
   if (token) { updateApiStatus(); closeSetup(); showToast('Connected to osu! API ✓'); }
-  else { localStorage.removeItem(CREDS_KEY); updateApiStatus(); alert('Could not connect. Double-check your Client ID and Secret.'); }
+  else { localStorage.removeItem(CREDS_KEY); updateApiStatus(); alert('Could not connect.\n\n' + (lastTokenError || 'Unknown error') + '\n\nDouble-check your Client ID and Secret.'); }
 }
 function updateApiStatus() {
   const el = document.getElementById('api-status-el');
@@ -710,12 +824,12 @@ function updateApiStatus() {
 
 // ── Play CRUD ─────────────────────────────────────────────────────────────────
 function openAddModal() {
-  editingId = null; currentBmId = null; currentMaxCombo = null; calculatedAcc = null; currentCoverUrl = null;
+  editingId = null; currentBmId = null; currentMaxCombo = null; calculatedAcc = null; currentCoverUrl = null; currentBeatmapLoved = false;
   currentHitCircleCount = 0; currentSliderCount = 0; currentSpinnerCount = 0;
   document.getElementById('modal-title').textContent = 'Add play';
-  ['f-link','f-beatmap','f-pp','f-combo','f-count100','f-count50','f-misses'].forEach(id => document.getElementById(id).value = '');
+  ['f-link','f-beatmap','f-pp','f-combo','f-acc-input','f-count100','f-count50','f-misses'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('f-first-place').checked = false;
-  document.getElementById('f-combo').placeholder = 'FC or 578x';
+  document.getElementById('f-combo').placeholder = 'FC';
   document.getElementById('fetch-btn').style.display = '';
   setSelectedMods(''); renderModPicker();
   setFetchStatus('', '');
@@ -740,6 +854,7 @@ function editPlay(id) {
   document.getElementById('f-count100').value = p.count100 ?? '';
   document.getElementById('f-count50').value  = p.count50  ?? '';
   document.getElementById('f-misses').value   = p.miss     ?? '';
+  document.getElementById('f-acc-input').value = p.acc != null ? p.acc.toFixed(2) : '';
   document.getElementById('fetch-btn').style.display = 'none';
   document.getElementById('f-first-place').checked = !!p.firstPlace;
   document.getElementById('save-error').textContent = '';
@@ -771,7 +886,8 @@ function savePlay() {
   }
 
   const firstPlace = document.getElementById('f-first-place').checked;
-  const fields = { beatmap, pp, mods, acc, combo, link, count100, count50, miss, bmId: currentBmId, coverUrl: currentCoverUrl, maxCombo: currentMaxCombo, firstPlace };
+  const loved = editingId ? (plays.find(x => x.id === editingId)?.loved || false) : currentBeatmapLoved;
+  const fields = { beatmap, pp, mods, acc, combo, link, count100, count50, miss, bmId: currentBmId, coverUrl: currentCoverUrl, maxCombo: currentMaxCombo, firstPlace, loved };
   if (editingId) {
     const p = plays.find(x => x.id === editingId);
     if (p) Object.assign(p, fields);
@@ -781,24 +897,41 @@ function savePlay() {
   save(); closeModal(); renderModPills(); renderTable();
   showToast(editingId ? 'Play updated!' : 'Play added!');
 }
+let pendingDeleteId = null;
 function deletePlay(id) {
-  if (!confirm('Remove this play?')) return;
-  plays = plays.filter(p => p.id !== id);
+  pendingDeleteId = id;
+  document.getElementById('delete-modal').classList.add('open');
+}
+function closeDeleteModal() {
+  pendingDeleteId = null;
+  document.getElementById('delete-modal').classList.remove('open');
+}
+function confirmDelete() {
+  if (!pendingDeleteId) return;
+  plays = plays.filter(p => p.id !== pendingDeleteId);
   save(); renderModPills(); renderTable();
+  closeDeleteModal();
 }
 
 // ── Stats ─────────────────────────────────────────────────────────────────────
-function isFC(p) { return (p.combo || '').trim().toUpperCase() === 'FC'; }
+function isFC(p) { return (p.combo || '').trim().toUpperCase() === 'FC' || parseInt(p.miss || '0') === 0; }
 function calcTotals() {
-  const sorted = [...plays].sort((a, b) => b.pp - a.pp);
-  let wSum = 0, accSum = 0, accW = 0;
-  sorted.forEach((p, i) => {
-    const w = Math.pow(0.95, i);
-    p._weight = w * 100; p._weighted = p.pp * w; wSum += p._weighted;
-    if (i < 100) { accSum += p.acc * w; accW += w; }
+  const sorted = [...plays].sort((a, b) => {
+    if (!!a.loved !== !!b.loved) return a.loved ? 1 : -1;
+    return b.pp - a.pp;
   });
-  const bonus = 416.6667 * (1 - Math.pow(0.9994, Math.min(plays.length, 200)));
-  return { sorted, total: wSum + bonus, bonus, avgAcc: accW > 0 ? accSum / accW : null, fcs: plays.filter(p => p.firstPlace).length };
+  let wSum = 0, accSum = 0, rankedIdx = 0;
+  sorted.forEach((p) => {
+    if (!p.loved) {
+      const w = Math.pow(0.95, rankedIdx++);
+      p._weight = w * 100; p._weighted = p.pp * w; wSum += p._weighted;
+    } else {
+      p._weight = 0; p._weighted = 0;
+    }
+    accSum += p.acc;
+  });
+  const bonus = 416.6667 * (1 - Math.pow(0.9994, plays.filter(p => !p.loved).length));
+  return { sorted, total: wSum + bonus, bonus, avgAcc: plays.length > 0 ? accSum / plays.length : null, fcs: plays.filter(p => p.firstPlace).length };
 }
 function updateStats() {
   const { total, bonus, avgAcc, fcs } = calcTotals();
@@ -807,33 +940,32 @@ function updateStats() {
   document.getElementById('s-count').textContent = plays.length;
   document.getElementById('s-acc').textContent = avgAcc !== null ? (Math.floor(avgAcc * 100) / 100).toFixed(2) + '%' : '—';
   document.getElementById('s-fc').textContent = fcs;
-  document.getElementById('s-fc-sub').textContent = fcs + ' #1 score' + (fcs !== 1 ? 's' : '');
 }
 
 // ── Filters & Sort ────────────────────────────────────────────────────────────
 function renderModPills() {
   const pills = [
-    `<div class="pill${modFilters.has('NM') ? ' active' : ''}" onclick="toggleModFilter('NM')">NM</div>`,
-    ...MOD_ORDER.map(k =>
-      `<div class="pill${modFilters.has(k) ? ' active' : ''}" onclick="toggleModFilter('${k}')">${k}</div>`
-    )
+    `<div class="pill${modFilters.has('NM') ? ' active' : ''}" onclick="toggleModFilter('NM')" title="No Mod">NM</div>`,
+    ...MOD_ORDER.map(k => {
+      const f = MOD_SKIN_FILE[k];
+      const m = MOD_LIST.find(x => x.key === k);
+      if (!f) return `<div class="pill${modFilters.has(k) ? ' active' : ''}" onclick="toggleModFilter('${k}')">${k}</div>`;
+      return `<button class="mod-filter-btn${modFilters.has(k) ? ' active' : ''}" onclick="toggleModFilter('${k}')" title="${m.label}">
+        <img src="${OSU_SKIN}/selection-mod-${f}@2x.png" alt="${k}">
+      </button>`;
+    })
   ];
   document.getElementById('mod-pills').innerHTML = pills.join('');
 }
 function toggleModFilter(key) {
   if (modFilters.has(key)) modFilters.delete(key);
   else modFilters.add(key);
-  document.getElementById('f-all').classList.toggle('active', modFilters.size === 0);
-  renderModPills(); renderTable();
-}
-function clearModFilter() {
-  modFilters.clear();
-  document.getElementById('f-all').classList.add('active');
   renderModPills(); renderTable();
 }
 function toggleFC() { fcFilter = !fcFilter; if (fcFilter) missFilter = false; document.getElementById('f-fc').classList.toggle('active', fcFilter); document.getElementById('f-miss').classList.toggle('active', missFilter); renderTable(); }
 function toggleMiss() { missFilter = !missFilter; if (missFilter) fcFilter = false; document.getElementById('f-fc').classList.toggle('active', fcFilter); document.getElementById('f-miss').classList.toggle('active', missFilter); renderTable(); }
 function toggleFirst() { firstFilter = !firstFilter; document.getElementById('f-first').classList.toggle('active', firstFilter); renderTable(); }
+function toggleLovedFilter() { lovedFilter = !lovedFilter; document.getElementById('f-loved-pill').classList.toggle('active', lovedFilter); renderTable(); }
 function getFiltered(sorted) {
   const q = document.getElementById('search-input').value.toLowerCase();
   return sorted.filter(p => {
@@ -845,6 +977,8 @@ function getFiltered(sorted) {
     if (fcFilter && !isFC(p)) return false;
     if (missFilter && isFC(p)) return false;
     if (firstFilter && !p.firstPlace) return false;
+    if (!firstFilter && lovedFilter && !p.loved) return false;
+    if (!firstFilter && !lovedFilter && p.loved) return false;
     if (q && !(p.beatmap || '').toLowerCase().includes(q)) return false;
     return true;
   });
@@ -858,6 +992,12 @@ function setSort(key) {
 }
 function sortPlays(arr) {
   return [...arr].sort((a, b) => {
+    // 1st filter: sort by insertion order (newest first), loved and ranked mixed
+    if (firstFilter) {
+      return plays.indexOf(b) - plays.indexOf(a);
+    }
+    // Loved maps always stay at the bottom unless loved filter is active
+    if (!lovedFilter && !!a.loved !== !!b.loved) return a.loved ? 1 : -1;
     let av, bv;
     if (sortKey === 'weighted') { av = a._weighted; bv = b._weighted; }
     else if (sortKey === 'pp') { av = a.pp; bv = b.pp; }
@@ -888,7 +1028,7 @@ function calcGrade(acc, miss, mods) {
 const OSU_ASSETS = 'https://raw.githubusercontent.com/ppy/osu-web/master/public/images/badges';
 const OSU_SKIN = 'https://raw.githubusercontent.com/emersion/osu-skin-default/master';
 const MOD_SKIN_FILE = { EZ:'easy', NF:'nofail', HT:'halftime', HR:'hardrock', SD:'suddendeath', PF:'perfect',
-  DT:'doubletime', NC:'nightcore', HD:'hidden', FL:'flashlight', RX:'relax', AP:'autoplay', SO:'spunout' };
+  DT:'doubletime', NC:'nightcore', HD:'hidden', FL:'flashlight', RX:'relax', AP:'relax2', SO:'spunout' };
 const MOD_NAMES = ['EZ','NF','HT','HR','SD','PF','DT','NC','HD','FL','RX','AP','SO'];
 function modBadge(m) {
   const u = (m || 'NM').toUpperCase();
@@ -939,8 +1079,8 @@ function renderTable() {
     tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="big">🎵</div><p>${msg}</p></div></td></tr>`;
     return;
   }
-  tbody.innerHTML = displayed.map(p => {
-    const globalRank = sorted.findIndex(s => s.id === p.id) + 1;
+  tbody.innerHTML = displayed.map((p, localIdx) => {
+    const globalRank = (lovedFilter || firstFilter) ? localIdx + 1 : sorted.filter(s => !s.loved).findIndex(s => s.id === p.id) + 1;
     const acc = Number(p.acc) || 0;
     const miss = Number(p.miss) || 0;
     const nameCell = p.link
@@ -949,9 +1089,9 @@ function renderTable() {
     const coverStyle = p.coverUrl ? ` class="has-cover" style="--row-bg:url('${p.coverUrl}')"` : '';
     return `<tr${coverStyle}>
       <td><span class="rank-num">${globalRank}</span></td>
-      <td><span class="pp-w">${p._weighted.toFixed(0)}</span></td>
+      <td><span class="pp-w">${p.loved ? '<span style="color:#ff66aa;font-size:10px;">Loved</span>' : p._weighted.toFixed(0)}</span></td>
       <td><span class="pp-raw">${Number(p.pp).toFixed(0)}</span></td>
-      <td style="max-width:260px" title="${esc(p.beatmap)}">${nameCell}</td>
+      <td style="max-width:260px" title="${esc(p.beatmap)}">${nameCell}${p.loved ? '<span style="color:#ff66aa;margin-left:6px;" title="Loved map">♥</span>' : ''}</td>
       <td>${modBadge(p.mods)}</td>
       <td><span class="weight-val">${p._weight.toFixed(2)}%</span></td>
       <td><div class="acc-cell"><span class="acc-num">${(Math.floor(acc * 100) / 100).toFixed(2)}%</span>${calcGrade(acc, miss, p.mods)}</div></td>
@@ -999,12 +1139,11 @@ document.addEventListener('keydown', e => {
 });
 document.getElementById('play-modal').addEventListener('click', e => { if (e.target.id === 'play-modal') closeModal(); });
 document.getElementById('setup-modal').addEventListener('click', e => { if (e.target.id === 'setup-modal') closeSetup(); });
+document.getElementById('delete-modal').addEventListener('click', e => { if (e.target.id === 'delete-modal') closeDeleteModal(); });
 
 load();
 renderModPicker();
 
-// Heartbeat — keeps the local server alive; server auto-exits when pings stop
-if (isLocalServer()) setInterval(() => fetch('/ping').catch(() => {}), 4000);
 </script>
 </body>
 </html>
