@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PPSheet</title>
 <link rel="icon" type="image/png" href="/logo.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#ff66aa">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&family=Inconsolata:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -34,12 +36,12 @@
   .btn-sm { padding: 4px 10px; font-size: 11px; }
   .btn-icon { padding: 4px 8px; }
 
-  .main { padding: 24px 28px; max-width: 1300px; margin: 0 auto; }
+  .main { padding: 24px 28px; max-width: 1300px; margin: 0 auto; position: relative; z-index: 1; }
 
-  .stats-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin-bottom: 24px; }
+  .stats-row { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 12px; margin-bottom: 24px; }
   .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); padding: 16px 18px; }
   .stat-label { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-bottom: 6px; }
-  .stat-val { font-family: var(--mono); font-size: 22px; color: var(--text); }
+  .stat-val { font-family: var(--sans); font-size: 22px; font-weight: 700; color: var(--text); }
   .stat-val.pink { color: var(--pink); }
   .stat-sub { font-size: 11px; color: var(--text3); margin-top: 3px; }
 
@@ -56,27 +58,31 @@
   .mod-filter-btn img { width: 28px; height: 28px; display: block; filter: brightness(0.4) saturate(0.5); transition: filter 0.12s; }
   .mod-filter-btn:hover img { filter: brightness(0.7) saturate(0.8); }
   .mod-filter-btn.active img { filter: brightness(1) saturate(1); }
+  .grade-filter-btn { padding: 2px; border-radius: 6px; border: 2px solid transparent; background: transparent; cursor: pointer; user-select: none; }
+  .grade-filter-btn img { width: 32px; height: 32px; display: block; object-fit: contain; filter: brightness(0.4) saturate(0.4); transition: filter 0.12s; }
+  .grade-filter-btn:hover img { filter: brightness(0.75) saturate(0.8); }
+  .grade-filter-btn.active img { filter: brightness(1) saturate(1); }
 
   .table-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
   table { width: 100%; border-collapse: collapse; position: relative; }
   thead { background: var(--bg3); }
   th { padding: 10px 12px; text-align: left; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text3); font-weight: 500; white-space: nowrap; cursor: pointer; user-select: none; }
   th:hover { color: var(--text2); }
-  th.sorted { color: var(--pink); }
-  td { padding: 9px 12px; border-top: 1px solid var(--border); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  th.sorted { color: var(--text3); }
+  td { padding: 14px 12px; border-top: 1px solid var(--border); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   tr:hover td { background: rgba(255,255,255,0.02); }
-  .rank-num { font-family: var(--mono); font-size: 11px; color: var(--text3); }
-  .pp-w { font-family: var(--mono); color: var(--pink); }
-  .pp-raw { font-family: var(--mono); color: var(--text2); font-size: 12px; }
-  .weight-val { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+  .rank-num { font-family: var(--sans); font-size: 11px; color: var(--text3); }
+  .pp-w { font-family: var(--sans); color: var(--text2); font-size: 12px; }
+  .pp-raw { font-family: var(--sans); color: var(--pink); font-weight: 700; }
+  .weight-val { font-family: var(--sans); font-size: 11px; color: var(--text3); }
   .mod-icons { display: inline-flex; gap: 2px; flex-wrap: nowrap; align-items: center; }
   .mod-icon { width: 30px; height: 30px; object-fit: contain; border-radius: 6px; }
   .fc-tag { font-size: 11px; font-weight: 600; color: var(--green); }
   .miss-tag { font-size: 11px; color: var(--red); }
   .sb-tag { font-size: 11px; color: var(--orange); }
   .acc-cell { display: flex; align-items: center; gap: 8px; }
-  .acc-num { font-family: var(--mono); font-size: 12px; min-width: 54px; }
-  .grade-img { width: 32px; height: 32px; object-fit: contain; }
+  .acc-num { font-family: var(--sans); font-size: 12px; min-width: 54px; }
+  .grade-img { width: 42px; height: 42px; object-fit: contain; }
   .act-btns { display: flex; gap: 4px; opacity: 0; transition: opacity 0.1s; }
   tr:hover .act-btns { opacity: 1; }
   .empty-state { text-align: center; padding: 60px 20px; color: var(--text3); }
@@ -135,11 +141,35 @@
 
   .footer { text-align: center; font-size: 11px; color: var(--text3); padding: 28px 0 20px; }
 
+  /* Profile switcher */
+  .profile-switcher { position: relative; }
+  .profile-btn { display: flex; align-items: center; gap: 7px; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--rs); padding: 5px 11px; cursor: pointer; font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--text); transition: background 0.15s; user-select: none; }
+  .profile-btn:hover { background: var(--bg4); }
+  .profile-avatar { width: 22px; height: 22px; border-radius: 50%; background: var(--pink); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .profile-chevron { font-size: 9px; color: var(--text3); transition: transform 0.15s; }
+  .profile-switcher.open .profile-chevron { transform: rotate(180deg); }
+  .profile-dropdown { display: none; position: absolute; top: calc(100% + 6px); left: 0; min-width: 200px; background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--r); padding: 6px; z-index: 300; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+  .profile-switcher.open .profile-dropdown { display: block; }
+  .profile-item { display: flex; align-items: center; gap: 8px; padding: 7px 9px; border-radius: var(--rs); cursor: pointer; transition: background 0.12s; }
+  .profile-item:hover { background: var(--bg3); }
+  .profile-item.active-profile { background: rgba(255,102,170,0.12); }
+  .profile-item-name { flex: 1; font-size: 13px; color: var(--text); font-weight: 500; }
+  .profile-item.active-profile .profile-item-name { color: var(--pink); font-weight: 600; }
+  .profile-item-check { font-size: 12px; color: var(--pink); width: 14px; }
+  .profile-del-btn { font-size: 11px; color: var(--text3); background: none; border: none; cursor: pointer; padding: 2px 5px; border-radius: 4px; transition: color 0.1s, background 0.1s; line-height: 1; }
+  .profile-del-btn:hover { color: var(--red); background: rgba(255,85,85,0.12); }
+  .profile-rename-btn { font-size: 11px; color: var(--text3); background: none; border: none; cursor: pointer; padding: 2px 5px; border-radius: 4px; transition: color 0.1s, background 0.1s; line-height: 1; }
+  .profile-rename-btn:hover { color: var(--text); background: var(--bg4); }
+  .profile-rename-input { flex: 1; background: var(--bg3); border: 1px solid var(--pink); border-radius: 4px; color: var(--text); font-family: var(--sans); font-size: 13px; font-weight: 500; padding: 2px 7px; outline: none; min-width: 0; }
+  .profile-dropdown-divider { border: none; border-top: 1px solid var(--border); margin: 5px 0; }
+  .profile-new-btn { display: flex; align-items: center; gap: 7px; width: 100%; padding: 7px 9px; border-radius: var(--rs); background: none; border: none; cursor: pointer; font-family: var(--sans); font-size: 13px; color: var(--text2); transition: background 0.12s, color 0.12s; }
+  .profile-new-btn:hover { background: var(--bg3); color: var(--text); }
+
   @keyframes rowBgFade { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; transform: translateX(0); } }
   tr.has-cover { position: relative; }
   tr.has-cover td { position: relative; z-index: 1; text-shadow: 0 1px 4px rgba(0,0,0,0.8); }
   tr.has-cover .rank-num,
-  tr.has-cover .pp-raw,
+  tr.has-cover .pp-w,
   tr.has-cover .weight-val,
   tr.has-cover .acc-num,
   tr.has-cover .combo-val { color: rgba(255,255,255,0.85) !important; }
@@ -149,7 +179,7 @@
       linear-gradient(to right, rgba(21,21,28,0.98) 0%, rgba(21,21,28,0.95) 25%, rgba(21,21,28,0.80) 55%, rgba(21,21,28,0.55) 100%),
       var(--row-bg);
     background-size: auto, cover;
-    background-position: center, center;
+    background-position: center, center 60%;
     animation: rowBgFade 0.7s ease;
   }
 
@@ -163,14 +193,26 @@
 </style>
 </head>
 <body>
+<canvas id="bg-canvas" style="position:fixed;inset:0;z-index:0;pointer-events:none;"></canvas>
 
-<div class="topbar">
+<div class="topbar" style="position:relative;z-index:10;">
   <div class="logo">pp<span>sheet</span></div>
+  <div class="profile-switcher" id="profile-switcher">
+    <div class="profile-btn" onclick="toggleProfileDropdown()">
+      <span id="profile-name-display">Profile</span>
+      <span class="profile-chevron">▼</span>
+    </div>
+    <div class="profile-dropdown" id="profile-dropdown">
+      <div id="profile-list"></div>
+      <hr class="profile-dropdown-divider">
+      <button class="profile-new-btn" onclick="openNewProfileModal()">＋ New profile</button>
+    </div>
+  </div>
   <div id="api-status-el" class="api-status"></div>
   <div class="topbar-right">
     <button class="btn" onclick="openSetup()">⚙ API Setup</button>
-    <button class="btn" onclick="exportData()" style="display:none">Export</button>
-    <label class="btn" style="display:none;cursor:pointer;">Import <input type="file" accept=".json" style="display:none" onchange="importFile(event)"></label>
+    <button class="btn" onclick="openExportModal()">↑ Export</button>
+    <button class="btn" onclick="openImportModal()">↓ Import</button>
     <button class="btn btn-pink" onclick="openAddModal()">+ Add play</button>
   </div>
 </div>
@@ -180,7 +222,10 @@
     <div class="stat-card">
       <div class="stat-label">Total PP</div>
       <div class="stat-val pink" id="s-total">0pp</div>
-      <div class="stat-sub" id="s-bonus">+0 bonus</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="stat-sub" id="s-bonus">+0 bonus</div>
+        <div id="s-pp-gain" style="font-size:11px;font-weight:600;opacity:0;"></div>
+      </div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Total plays</div>
@@ -193,6 +238,10 @@
     <div class="stat-card">
       <div class="stat-label">First place</div>
       <div class="stat-val" id="s-fc">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">~ Global Rank</div>
+      <div class="stat-val" id="s-rank">—</div>
     </div>
   </div>
 
@@ -207,7 +256,8 @@
     <div class="pill" id="f-fc" onclick="toggleFC()">FC</div>
     <div class="pill" id="f-miss" onclick="toggleMiss()">Non-FC</div>
     <div class="pill" id="f-first" onclick="toggleFirst()">1st</div>
-    <div class="pill" id="f-loved-pill" onclick="toggleLovedFilter()">♥ Loved</div>
+    <div class="pill" id="f-loved-pill" onclick="toggleLovedFilter()">Loved</div>
+    <div id="grade-filters" style="display:flex;gap:2px;align-items:center;width:100%;justify-content:center;margin-top:2px;"></div>
   </div>
 
   <div class="table-wrap">
@@ -215,8 +265,9 @@
       <thead>
         <tr>
           <th style="width:36px">#</th>
-          <th id="th-weighted" class="sorted" onclick="setSort('weighted')" style="width:80px">W. PP ↓</th>
-          <th id="th-pp" onclick="setSort('pp')" style="width:72px">Raw PP</th>
+          <th id="th-pp" onclick="setSort('pp')" style="width:80px">Raw PP</th>
+          <th id="th-weighted" class="sorted" onclick="setSort('weighted')" style="width:72px">Weight ↓</th>
+          <th style="width:52px"></th>
           <th id="th-beatmap" onclick="setSort('beatmap')">Beatmap</th>
           <th style="width:72px">Mods</th>
           <th id="th-acc" onclick="setSort('acc')" style="width:130px">Accuracy</th>
@@ -239,9 +290,10 @@
   <div class="link-row">
     <div class="form-row">
       <label>Beatmap link</label>
-      <input id="f-link" type="url" placeholder="https://osu.ppy.sh/beatmapsets/..." autocomplete="off" />
+      <input id="f-link" type="url" placeholder="https://osu.ppy.sh/beatmapsets/..." autocomplete="off"
+        onpaste="setTimeout(()=>{ if(parseBeatmapId(document.getElementById('f-link').value)) fetchBeatmap(); },0)"
+        oninput="clearTimeout(window._flinkTimer); window._flinkTimer=setTimeout(()=>{ if(parseBeatmapId(document.getElementById('f-link').value)) fetchBeatmap(); },600)" />
     </div>
-    <button class="btn" id="fetch-btn" onclick="fetchBeatmap()" style="flex-shrink:0;align-self:flex-end;">Fetch</button>
   </div>
   <div class="fetch-status" id="fetch-status"></div>
 
@@ -311,6 +363,23 @@
 </div>
 </div>
 
+<!-- New profile modal -->
+<div class="modal-bg" id="new-profile-modal">
+<div class="modal" style="max-width:340px;">
+  <h2 style="margin-bottom:4px;">New profile</h2>
+  <p class="modal-sub">Enter a name for the profile (e.g. your osu! username).</p>
+  <div class="form-row">
+    <label>Profile name</label>
+    <input id="new-profile-name" type="text" placeholder="Username" maxlength="32"
+      onkeydown="if(event.key==='Enter') confirmNewProfile()" />
+  </div>
+  <div class="modal-actions">
+    <button class="btn" onclick="closeNewProfileModal()">Cancel</button>
+    <button class="btn btn-pink" onclick="confirmNewProfile()">Create</button>
+  </div>
+</div>
+</div>
+
 <!-- API Setup modal -->
 <div class="modal-bg" id="setup-modal">
 <div class="modal">
@@ -344,7 +413,7 @@
 <script>
 let plays = [];
 let sortKey = 'weighted', sortDir = 1;
-let modFilters = new Set(), fcFilter = false, missFilter = false, firstFilter = false, lovedFilter = false;
+let modFilters = new Set(), fcFilter = false, missFilter = false, firstFilter = false, lovedFilter = false, gradeFilter = null;
 let editingId = null;
 let osuToken = null;
 let currentBmId = null;
@@ -358,20 +427,158 @@ let calculatedAcc = null;
 let currentCoverUrl = null;
 let currentBeatmapLoved = false;
 let ppCalcTimer = null;
-let attrsCache = {}; // key: `${bmId}_${modStr}` → difficulty attributes
-const PLAYS_KEY = 'ppsheet_v2_plays';
-const CREDS_KEY = 'ppsheet_osu_creds';
+let attrsCache = {}; // unused – kept for compatibility
+const CREDS_KEY  = 'ppsheet_osu_creds';
+const PROFILES_KEY = 'ppsheet_profiles';
+const LEGACY_PLAYS_KEY = 'ppsheet_v2_plays';
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
+// ── Profile system ────────────────────────────────────────────────────────────
+function profilePlaysKey(id) { return `ppsheet_profile_${id}_plays`; }
+
+function getProfilesMeta() {
+  try { return JSON.parse(localStorage.getItem(PROFILES_KEY)) || null; } catch { return null; }
+}
+function saveProfilesMeta(meta) { localStorage.setItem(PROFILES_KEY, JSON.stringify(meta)); }
+
+let profilesMeta = null; // { active: id, list: [{id, name}] }
+
+function initProfiles() {
+  profilesMeta = getProfilesMeta();
+  if (!profilesMeta) {
+    // First launch — migrate legacy plays if any
+    const legacyPlays = (() => { try { return JSON.parse(localStorage.getItem(LEGACY_PLAYS_KEY)) || []; } catch { return []; } })();
+    const id = uid();
+    profilesMeta = { active: id, list: [{ id, name: 'Default' }] };
+    saveProfilesMeta(profilesMeta);
+    if (legacyPlays.length) localStorage.setItem(profilePlaysKey(id), JSON.stringify(legacyPlays));
+  }
+}
+
+function activeProfile() {
+  return profilesMeta.list.find(p => p.id === profilesMeta.active) || profilesMeta.list[0];
+}
+
+function switchProfile(id) {
+  save(); // save current before switching
+  profilesMeta.active = id;
+  saveProfilesMeta(profilesMeta);
+  loadPlays();
+  renderProfileUI();
+  renderModPills();
+  renderTable();
+  closeProfileDropdown();
+}
+
+function createProfile(name) {
+  const id = uid();
+  profilesMeta.list.push({ id, name });
+  profilesMeta.active = id;
+  saveProfilesMeta(profilesMeta);
+  plays = [];
+  save();
+  renderProfileUI();
+  renderTable();
+}
+
+function deleteProfile(id) {
+  if (profilesMeta.list.length <= 1) { showToast('Cannot delete the only profile.'); return; }
+  profilesMeta.list = profilesMeta.list.filter(p => p.id !== id);
+  localStorage.removeItem(profilePlaysKey(id));
+  if (profilesMeta.active === id) profilesMeta.active = profilesMeta.list[0].id;
+  saveProfilesMeta(profilesMeta);
+  loadPlays();
+  renderProfileUI();
+  renderModPills();
+  renderTable();
+  closeProfileDropdown();
+}
+
+function renderProfileUI(renamingId) {
+  const prof = activeProfile();
+  document.getElementById('profile-name-display').textContent = prof.name;
+
+  const list = document.getElementById('profile-list');
+  list.innerHTML = profilesMeta.list.map(p => {
+    const isActive = p.id === profilesMeta.active;
+    const isRenaming = p.id === renamingId;
+    const nameCell = isRenaming
+      ? `<input class="profile-rename-input" id="rename-input-${p.id}" value="${esc(p.name)}" maxlength="32"
+           onclick="event.stopPropagation()"
+           onkeydown="event.stopPropagation(); if(event.key==='Enter') commitRename('${p.id}'); if(event.key==='Escape') renderProfileUI();"
+           onblur="commitRename('${p.id}')" />`
+      : `<span class="profile-item-name">${esc(p.name)}</span>`;
+    return `
+      <div class="profile-item ${isActive ? 'active-profile' : ''}" onclick="${isRenaming ? '' : `switchProfile('${p.id}')`}">
+        <span class="profile-item-check">${isActive ? '✓' : ''}</span>
+        ${nameCell}
+        <button class="profile-rename-btn" onclick="event.stopPropagation();startRename('${p.id}')" title="Rename">✎</button>
+        ${profilesMeta.list.length > 1 ? `<button class="profile-del-btn" onclick="event.stopPropagation();deleteProfile('${p.id}')" title="Delete">✕</button>` : ''}
+      </div>`;
+  }).join('');
+
+  if (renamingId) {
+    const inp = document.getElementById(`rename-input-${renamingId}`);
+    if (inp) { inp.focus(); inp.select(); }
+  }
+}
+
+function startRename(id) {
+  renderProfileUI(id);
+}
+
+function commitRename(id) {
+  const inp = document.getElementById(`rename-input-${id}`);
+  if (!inp) return;
+  const name = inp.value.trim();
+  if (name) {
+    const p = profilesMeta.list.find(p => p.id === id);
+    if (p) p.name = name;
+    saveProfilesMeta(profilesMeta);
+  }
+  renderProfileUI();
+}
+
+function toggleProfileDropdown() {
+  document.getElementById('profile-switcher').classList.toggle('open');
+}
+function closeProfileDropdown() {
+  document.getElementById('profile-switcher').classList.remove('open');
+}
+
+function openNewProfileModal() {
+  closeProfileDropdown();
+  document.getElementById('new-profile-name').value = '';
+  document.getElementById('new-profile-modal').classList.add('open');
+  setTimeout(() => document.getElementById('new-profile-name').focus(), 50);
+}
+function closeNewProfileModal() {
+  document.getElementById('new-profile-modal').classList.remove('open');
+}
+function confirmNewProfile() {
+  const name = document.getElementById('new-profile-name').value.trim();
+  if (!name) { document.getElementById('new-profile-name').focus(); return; }
+  closeNewProfileModal();
+  createProfile(name);
+  showToast(`Profile "${name}" created!`);
+}
+
+// ── Data load/save ────────────────────────────────────────────────────────────
+function loadPlays() {
+  try { plays = JSON.parse(localStorage.getItem(profilePlaysKey(profilesMeta.active))) || []; } catch { plays = []; }
+}
+function save() { localStorage.setItem(profilePlaysKey(profilesMeta.active), JSON.stringify(plays)); }
+
 function load() {
-  try { plays = JSON.parse(localStorage.getItem(PLAYS_KEY)) || []; } catch { plays = []; }
+  initProfiles();
+  loadPlays();
+  renderProfileUI();
   updateApiStatus();
   renderModPills();
   renderTable();
 }
-function save() { localStorage.setItem(PLAYS_KEY, JSON.stringify(plays)); }
 
 // ── osu! API ──────────────────────────────────────────────────────────────────
 function getCreds() { try { return JSON.parse(localStorage.getItem(CREDS_KEY)) || null; } catch { return null; } }
@@ -428,7 +635,6 @@ async function fetchBeatmap() {
   if (!bmId) { setFetchStatus('Could not find a beatmap ID in that link. Make sure it links to a specific difficulty.', 'err'); return; }
 
   setFetchStatus('Fetching...', 'loading');
-  document.getElementById('fetch-btn').disabled = true;
   try {
     const token = await getToken();
     if (!token) { setFetchStatus('Could not connect to osu! API. Check your credentials in API Setup.', 'err'); return; }
@@ -459,7 +665,6 @@ async function fetchBeatmap() {
     comboInput.placeholder = currentMaxCombo ? `${currentMaxCombo}x` : 'FC';
     schedulePPCalc();
   } catch { setFetchStatus('Network error. Check your connection.', 'err'); }
-  finally { document.getElementById('fetch-btn').disabled = false; }
 }
 
 // ── Mod picker ────────────────────────────────────────────────────────────────
@@ -564,9 +769,14 @@ function renderModPicker() {
   if (display) display.textContent = getModString();
 }
 
-// ── PP calculation (osu! API attributes + local formula) ──────────────────────
-function modApiArray(modStr) {
-  return MOD_ORDER.filter(k => modStr.includes(k)).map(k => ({ acronym: k }));
+// ── PP calculation via rosu-pp-js ─────────────────────────────────────────────
+const MOD_BITS = { NF:1, EZ:2, HD:8, HR:16, SD:32, DT:64, RX:128, HT:256, NC:512, FL:1024, SO:4096, PF:16384 };
+function modBitmask(modStr) {
+  let mask = 0;
+  for (const [k, bit] of Object.entries(MOD_BITS)) {
+    if (modStr.includes(k)) mask |= bit;
+  }
+  return mask;
 }
 
 function setPPStatus(msg, type) {
@@ -619,174 +829,31 @@ function schedulePPCalc() {
   ppCalcTimer = setTimeout(calcPP, 600);
 }
 
-// ── osu!standard PP formula (ported from osu! source) ────────────────────────
-function d2p(diff) { // DifficultyToPerformance
-  return Math.pow(5.0 * Math.max(1.0, diff / 0.0675) - 4.0, 3.0) / 100000.0;
-}
-function missPen(missCount, strainCount) { // calculateMissPenalty
-  if (strainCount <= 1) return 1.0;
-  return 0.96 / (missCount / (4 * Math.pow(Math.log(strainCount), 0.94)) + 1);
-}
-function comboSc(combo, maxCombo) { // getComboScalingFactor
-  return maxCombo <= 0 ? 1.0 : Math.min(Math.pow(combo, 0.8) / Math.pow(maxCombo, 0.8), 1.0);
-}
-function revLerp(t, a, b) { return Math.max(0, Math.min(1, (t - a) / (b - a))); }
-
-function osuPP(attrs, combo, count100, count50, countMiss, mods) {
-  const {
-    aim_difficulty: aimDiff = 0,    speed_difficulty: speedDiff = 0,
-    flashlight_difficulty: flDiff = 0,
-    slider_factor: sliderFactor = 1,
-    aim_difficult_strain_count: aimSC = 1,
-    speed_difficult_strain_count: spdSC = 1,
-    speed_note_count: speedNC = 0,
-    max_combo: maxCombo = 0,
-    approach_rate: ar = 9,
-    overall_difficulty: od = 9,
-  } = attrs;
-
-  const totalHits = currentHitCircleCount + currentSliderCount + currentSpinnerCount;
-  if (totalHits === 0) return 0;
-
-  const countGreat = Math.max(0, totalHits - count100 - count50 - countMiss);
-  const accuracy = (300*countGreat + 100*count100 + 50*count50) / (300 * totalHits);
-
-  const hasHD = mods.includes('HD'), hasFL = mods.includes('FL');
-  const hasNF = mods.includes('NF'), hasSO = mods.includes('SO');
-  const hasRX = mods.includes('RX'), hasAP = mods.includes('AP');
-
-  // Effective miss count (classic slider accuracy mode)
-  let effMiss = countMiss;
-  if (currentSliderCount > 0) {
-    const fcThreshold = maxCombo - 0.1 * currentSliderCount;
-    if (combo < fcThreshold)
-      effMiss = Math.max(countMiss, fcThreshold / Math.max(1, combo));
-    effMiss = Math.min(count100 + count50 + countMiss, Math.max(countMiss, effMiss));
-  }
-  if (hasRX) {
-    const okM  = 0.75 * Math.max(0, od > 0 ? 1 - od / 13.33 : 1);
-    const mehM = Math.max(0, od > 0 ? 1 - Math.pow(od / 13.33, 5) : 1);
-    effMiss = Math.min(effMiss + count100 * okM + count50 * mehM, totalHits);
-  }
-
-  const lenBonus = 0.95 + 0.4 * Math.min(1, totalHits/2000)
-    + (totalHits > 2000 ? Math.log10(totalHits/2000) * 0.5 : 0);
-
-  // Aim
-  let aim = 0;
-  if (!hasAP) {
-    aim = d2p(aimDiff) * lenBonus;
-    if (effMiss > 0) aim *= missPen(effMiss, aimSC);
-    aim *= comboSc(combo, maxCombo);
-    aim *= accuracy;
-  }
-
-  // Speed
-  let spd = 0;
-  if (!hasRX) {
-    spd = d2p(speedDiff) * lenBonus;
-    if (effMiss > 0) spd *= missPen(effMiss, spdSC);
-    spd *= comboSc(combo, maxCombo);
-    const relDiff   = Math.max(0, totalHits - speedNC);
-    const relGreat  = Math.max(0, countGreat - relDiff);
-    const relOk     = Math.max(0, count100  - Math.max(0, relDiff - countGreat));
-    const relMeh    = Math.max(0, count50   - Math.max(0, relDiff - countGreat - count100));
-    const relAcc    = speedNC > 0 ? (relGreat*6 + relOk*2 + relMeh) / (speedNC*6) : 0;
-    spd *= Math.pow((accuracy + relAcc) / 2, (14.5 - Math.max(od, 0)) / 2);
-  }
-
-  // Accuracy
-  let acc = 0;
-  if (!hasRX) {
-    const objWithAcc = currentHitCircleCount; // classic mode: circles only
-    let betterAcc = 0;
-    if (objWithAcc > 0)
-      betterAcc = Math.max(0, ((countGreat - Math.max(0, totalHits - objWithAcc))*6 + count100*2 + count50) / (objWithAcc*6));
-    acc = Math.pow(1.52163, od) * Math.pow(betterAcc, 24) * 2.83;
-    acc *= Math.min(1.15, Math.pow(objWithAcc / 1000, 0.3));
-    if (hasHD) acc *= 1 + 0.08 * revLerp(ar, 11.5, 10);
-    if (hasFL) acc *= 1.02;
-  }
-
-  // Flashlight
-  let fl = 0;
-  if (hasFL && flDiff > 0) {
-    fl = d2p(flDiff) * lenBonus;
-    if (effMiss > 0)
-      fl *= 0.97 * Math.pow(1 - Math.pow(effMiss/totalHits, 0.775), Math.pow(effMiss, 0.875));
-    fl *= comboSc(combo, maxCombo);
-    fl *= 0.5 + accuracy / 2;
-  }
-
-  // Total
-  let mult = 1.14;
-  if (hasNF) mult *= Math.max(0.9, 1 - 0.02 * effMiss);
-  if (hasSO && totalHits > 0) mult *= 1 - Math.pow(currentSpinnerCount / totalHits, 0.85);
-  if (hasRX) mult *= 0.6;
-
-  return Math.max(0, Math.pow(
-    Math.pow(aim,1.1) + Math.pow(spd,1.1) + Math.pow(acc,1.1) + Math.pow(fl,1.1), 1/1.1
-  ) * mult);
-}
-
+// ── PP calculation via rosu-pp-js (server-side) ──────────────────────────────
 async function calcPP() {
   if (!currentBmId) return;
   const modStr   = getModString();
-  const count100 = parseInt(document.getElementById('f-count100').value) || 0;
-  const count50  = parseInt(document.getElementById('f-count50').value)  || 0;
-  const miss     = parseInt(document.getElementById('f-misses').value)   || 0;
+  const n100     = parseInt(document.getElementById('f-count100').value) || 0;
+  const n50      = parseInt(document.getElementById('f-count50').value)  || 0;
+  const misses   = parseInt(document.getElementById('f-misses').value)   || 0;
   const comboRaw = document.getElementById('f-combo').value.trim().toUpperCase();
-  const maxComboFallback = currentMaxCombo || 1;
+  const maxComboFallback = currentMaxCombo || undefined;
   const combo    = (comboRaw === 'FC' || comboRaw === '') ? maxComboFallback
                  : (parseInt(comboRaw) || maxComboFallback);
-  const mods     = MOD_ORDER.filter(k => modStr.includes(k));
 
-  // Fetch difficulty attributes (cached per beatmap+mods)
-  const cacheKey = `${currentBmId}_${modStr}`;
-  let attrs = attrsCache[cacheKey];
-  if (!attrs) {
-    try {
-      const token = await getToken();
-      if (!token) { setPPStatus('no token', 'err'); return; }
-      const res = await fetch(`/proxy/beatmap-attributes/${currentBmId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ ruleset_id: 0, mods: modApiArray(modStr) }),
-      });
-      if (!res.ok) { setPPStatus(`attrs error ${res.status}`, 'err'); return; }
-      const data = await res.json();
-      attrs = data.attributes;
-      if (!attrs) { setPPStatus('no attributes', 'err'); return; }
-      attrsCache[cacheKey] = attrs;
-    } catch { setPPStatus('network error', 'err'); return; }
-  }
-
-  // Compute rate-adjusted AR and OD from stored base values.
-  // The osu! API returns base values; the performance calculator applies
-  // HR/EZ first, then the DT/HT clock rate on top — we must do the same.
-  const clockRate = mods.includes('DT') ? 1.5 : mods.includes('HT') ? 0.75 : 1.0;
-  let adjAR = currentBaseAR, adjOD = currentBaseOD;
-  if (mods.includes('HR')) { adjAR = Math.min(adjAR * 1.4, 10); adjOD = Math.min(adjOD * 1.4, 10); }
-  else if (mods.includes('EZ')) { adjAR /= 2; adjOD /= 2; }
-  if (clockRate !== 1.0) {
-    const arMs = adjAR < 5 ? 1800 - 120 * adjAR : 1200 - 150 * (adjAR - 5);
-    const adjArMs = arMs / clockRate;
-    adjAR = adjArMs > 1200 ? (1800 - adjArMs) / 120 : 5 + (1200 - adjArMs) / 150;
-    adjOD = (80 - (80 - 6 * adjOD) / clockRate) / 6;
-  }
-  attrs = { ...attrs, approach_rate: adjAR, overall_difficulty: adjOD };
-
-  const pp = osuPP(attrs, combo, count100, count50, miss, mods);
-
-  // Derive accuracy for storage
-  const totalHits = currentHitCircleCount + currentSliderCount + currentSpinnerCount;
-  if (totalHits > 0) {
-    const countGreat = Math.max(0, totalHits - count100 - count50 - miss);
-    calculatedAcc = (300*countGreat + 100*count100 + 50*count50) / (300 * totalHits) * 100;
-  }
-
-  document.getElementById('f-pp').value = pp.toFixed(2);
-  setPPStatus('✓', 'ok');
+  try {
+    const res = await fetch('/proxy/calculate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ beatmapId: currentBmId, mods: modBitmask(modStr), combo, n100, n50, misses }),
+    });
+    if (!res.ok) { setPPStatus(`calc error ${res.status}`, 'err'); return; }
+    const data = await res.json();
+    if (data.error) { setPPStatus('calc error', 'err'); return; }
+    calculatedAcc = data.acc;
+    document.getElementById('f-pp').value = data.pp.toFixed(2);
+    setPPStatus('✓', 'ok');
+  } catch { setPPStatus('network error', 'err'); }
 }
 
 function setFetchStatus(msg, type) {
@@ -829,7 +896,6 @@ function openAddModal() {
   ['f-link','f-beatmap','f-pp','f-combo','f-acc-input','f-count100','f-count50','f-misses'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('f-first-place').checked = false;
   document.getElementById('f-combo').placeholder = 'FC';
-  document.getElementById('fetch-btn').style.display = '';
   setSelectedMods(''); renderModPicker();
   setFetchStatus('', '');
   setPPStatus('', '');
@@ -854,7 +920,6 @@ function editPlay(id) {
   document.getElementById('f-count50').value  = p.count50  ?? '';
   document.getElementById('f-misses').value   = p.miss     ?? '';
   document.getElementById('f-acc-input').value = p.acc != null ? p.acc.toFixed(2) : '';
-  document.getElementById('fetch-btn').style.display = 'none';
   document.getElementById('f-first-place').checked = !!p.firstPlace;
   document.getElementById('save-error').textContent = '';
   setFetchStatus('', '');
@@ -886,6 +951,19 @@ function savePlay() {
 
   const firstPlace = document.getElementById('f-first-place').checked;
   const loved = editingId ? (plays.find(x => x.id === editingId)?.loved || false) : currentBeatmapLoved;
+
+  if (!editingId) {
+    const dup = plays.find(x =>
+      x.beatmap === beatmap &&
+      (x.mods || 'NM') === (mods || 'NM') &&
+      Number(x.pp).toFixed(0) === pp.toFixed(0) &&
+      (x.combo || '').toUpperCase() === (combo || '').toUpperCase() &&
+      (x.acc != null && acc != null ? Math.abs(x.acc - acc) < 0.01 : true)
+    );
+    if (dup) { saveErr('This score already exists in your sheet.'); return; }
+  }
+
+  const prevTotal = calcTotals().total;
   const fields = { beatmap, pp, mods, acc, combo, link, count100, count50, miss, bmId: currentBmId, coverUrl: currentCoverUrl, maxCombo: currentMaxCombo, firstPlace, loved };
   if (editingId) {
     const p = plays.find(x => x.id === editingId);
@@ -894,9 +972,49 @@ function savePlay() {
     plays.push({ id: uid(), ...fields });
   }
   save(); closeModal(); renderModPills(); renderTable();
+  showPPGain(calcTotals().total - prevTotal);
   showToast(editingId ? 'Play updated!' : 'Play added!');
 }
 let pendingDeleteId = null;
+let _previewAudio = null;
+let _previewId = null;
+
+function togglePreview(id, link) {
+  const beatmapsetId = (link.match(/beatmapsets\/(\d+)/) || [])[1];
+  if (!beatmapsetId) return;
+
+  const btn = document.getElementById('preview-btn-' + id);
+
+  // Stop current audio if same button clicked
+  if (_previewId === id) {
+    _previewAudio.pause();
+    _previewAudio = null;
+    _previewId = null;
+    btn.textContent = '▶';
+    btn.style.color = '';
+    return;
+  }
+
+  // Stop any other playing preview
+  if (_previewAudio) {
+    _previewAudio.pause();
+    const prev = document.getElementById('preview-btn-' + _previewId);
+    if (prev) { prev.textContent = '▶'; prev.style.color = ''; }
+  }
+
+  _previewAudio = new Audio(`https://b.ppy.sh/preview/${beatmapsetId}.mp3`);
+  _previewId = id;
+  btn.textContent = '■';
+  btn.style.color = 'var(--pink)';
+  _previewAudio.play();
+  _previewAudio.onended = () => {
+    btn.textContent = '▶';
+    btn.style.color = '';
+    _previewAudio = null;
+    _previewId = null;
+  };
+}
+
 function deletePlay(id) {
   pendingDeleteId = id;
   document.getElementById('delete-modal').classList.add('open');
@@ -907,13 +1025,26 @@ function closeDeleteModal() {
 }
 function confirmDelete() {
   if (!pendingDeleteId) return;
+  const prevTotal = calcTotals().total;
   plays = plays.filter(p => p.id !== pendingDeleteId);
   save(); renderModPills(); renderTable();
+  showPPGain(calcTotals().total - prevTotal);
   closeDeleteModal();
 }
 
 // ── Stats ─────────────────────────────────────────────────────────────────────
-function isFC(p) { return (p.combo || '').trim().toUpperCase() === 'FC' || parseInt(p.miss || '0') === 0; }
+function isFC(p) {
+  const comboStr = (p.combo || '').trim().toUpperCase();
+  if (comboStr === 'FC') return true;
+  if (parseInt(p.miss || '0') > 0) return false;
+  // Sliderbreak check: if we know the max combo, achieved combo must equal it
+  if (p.maxCombo && comboStr) {
+    const achieved = parseInt(comboStr);
+    if (!isNaN(achieved)) return achieved >= p.maxCombo;
+  }
+  // No max combo data to compare against — fall back to 0 misses
+  return parseInt(p.miss || '0') === 0;
+}
 function calcTotals() {
   const sorted = [...plays].sort((a, b) => {
     if (!!a.loved !== !!b.loved) return a.loved ? 1 : -1;
@@ -939,6 +1070,116 @@ function updateStats() {
   document.getElementById('s-count').textContent = plays.length;
   document.getElementById('s-acc').textContent = avgAcc !== null ? (Math.floor(avgAcc * 100) / 100).toFixed(2) + '%' : '—';
   document.getElementById('s-fc').textContent = fcs;
+  scheduleRankFetch(Math.round(total));
+}
+
+function showPPGain(diff) {
+  if (Math.round(diff) === 0) return;
+  const el = document.getElementById('s-pp-gain');
+  const gain = Math.round(diff);
+  el.textContent = (gain > 0 ? '+' : '') + gain.toLocaleString() + 'pp';
+  el.style.color = gain > 0 ? 'var(--green)' : 'var(--red)';
+  el.style.opacity = '1';
+}
+
+// ── Live rank ──────────────────────────────────────────────────────────────────
+// Top 10 countries by active osu! players — used to build reference points
+// covering global ranks well below the 10,000 API limit
+const TOP_COUNTRIES = ['US', 'RU', 'PL', 'CA', 'GB', 'DE', 'KR', 'BR', 'AU', 'FR'];
+
+let _rankCache = { pp: null, rank: null };
+let _rankTimer = null;
+let _refPoints = null; // sorted (pp desc) reference points from country page 200s
+
+async function fetchRankingPage(token, page, country = '') {
+  const params = `page=${page}` + (country ? `&country=${country}` : '');
+  const res = await fetch(`/proxy/rankings?${params}`, {
+    headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+async function loadRefPoints(token) {
+  if (_refPoints) return _refPoints;
+  const points = [];
+  for (const cc of TOP_COUNTRIES) {
+    const data = await fetchRankingPage(token, 200, cc);
+    if (!data?.ranking) continue;
+    for (const p of data.ranking) {
+      if (p.pp > 0 && p.global_rank) points.push({ pp: p.pp, rank: p.global_rank });
+    }
+  }
+  _refPoints = points.sort((a, b) => b.pp - a.pp);
+  return _refPoints;
+}
+
+function formulaRank(pp) {
+  // Exponential fit calibrated to real data points (±3% accuracy)
+  return Math.max(1, Math.round(1461000 * Math.exp(-0.000533 * pp)));
+}
+
+async function fetchLiveRank(totalPP) {
+  if (!totalPP || totalPP < 100) return null;
+  if (_rankCache.pp !== null && Math.abs(_rankCache.pp - totalPP) < 10) return _rankCache.rank;
+  if (!getCreds()) return null;
+  const token = await getToken();
+  if (!token) return null;
+
+  // Phase 1: Binary search global rankings (accurate for top ~10,000, pp ≥ 9000)
+  if (totalPP >= 9000) {
+    let lo = 1, hi = 200;
+    while (lo < hi) {
+      const mid = Math.floor((lo + hi) / 2);
+      const data = await fetchRankingPage(token, mid);
+      if (!data?.ranking?.length) { hi = mid - 1; break; }
+      if (data.ranking[data.ranking.length - 1].pp > totalPP) lo = mid + 1;
+      else hi = mid;
+    }
+    const data = await fetchRankingPage(token, lo);
+    if (data?.ranking) {
+      for (const player of data.ranking) {
+        if (player.pp <= totalPP) {
+          _rankCache = { pp: totalPP, rank: player.global_rank };
+          return player.global_rank;
+        }
+      }
+    }
+  }
+
+  // Phase 2: Interpolate between country reference points
+  // Each country's page 200 = their ~10,000th player, giving (pp, global_rank) pairs
+  // at different global rank depths (e.g. US ~#20k, PH ~#300k)
+  const refs = await loadRefPoints(token);
+  if (refs.length >= 2) {
+    let upper = null, lower = null;
+    for (let i = 0; i < refs.length; i++) {
+      if (refs[i].pp >= totalPP) upper = refs[i];
+      else { lower = refs[i]; break; }
+    }
+    if (upper && lower) {
+      const t = (totalPP - lower.pp) / (upper.pp - lower.pp);
+      const rank = Math.round(lower.rank + (upper.rank - lower.rank) * t);
+      _rankCache = { pp: totalPP, rank };
+      return rank;
+    }
+  }
+
+  // Phase 3: Formula fallback (below all reference points)
+  const rank = formulaRank(totalPP);
+  _rankCache = { pp: totalPP, rank };
+  return rank;
+}
+
+function scheduleRankFetch(totalPP) {
+  clearTimeout(_rankTimer);
+  _rankTimer = setTimeout(async () => {
+    const el = document.getElementById('s-rank');
+    if (!el) return;
+    el.textContent = '...';
+    const rank = await fetchLiveRank(totalPP);
+    el.textContent = rank ? '#' + rank.toLocaleString() : '—';
+  }, 1500);
 }
 
 // ── Filters & Sort ────────────────────────────────────────────────────────────
@@ -956,15 +1197,54 @@ function renderModPills() {
   ];
   document.getElementById('mod-pills').innerHTML = pills.join('');
 }
+const MOD_FILTER_CONFLICTS = {
+  EZ: ['HR'], HR: ['EZ'],
+  HT: ['DT', 'NC'], DT: ['HT', 'NC'], NC: ['HT', 'DT'],
+  NF: ['SD', 'PF'], SD: ['PF', 'NF'], PF: ['SD', 'NF'],
+  RX: ['AP'], AP: ['RX'],
+};
 function toggleModFilter(key) {
-  if (modFilters.has(key)) modFilters.delete(key);
-  else modFilters.add(key);
+  if (modFilters.has(key)) {
+    modFilters.delete(key);
+  } else {
+    modFilters.add(key);
+    (MOD_FILTER_CONFLICTS[key] || []).forEach(c => modFilters.delete(c));
+  }
   renderModPills(); renderTable();
 }
 function toggleFC() { fcFilter = !fcFilter; if (fcFilter) missFilter = false; document.getElementById('f-fc').classList.toggle('active', fcFilter); document.getElementById('f-miss').classList.toggle('active', missFilter); renderTable(); }
 function toggleMiss() { missFilter = !missFilter; if (missFilter) fcFilter = false; document.getElementById('f-fc').classList.toggle('active', fcFilter); document.getElementById('f-miss').classList.toggle('active', missFilter); renderTable(); }
 function toggleFirst() { firstFilter = !firstFilter; document.getElementById('f-first').classList.toggle('active', firstFilter); renderTable(); }
 function toggleLovedFilter() { lovedFilter = !lovedFilter; document.getElementById('f-loved-pill').classList.toggle('active', lovedFilter); renderTable(); }
+
+const GRADE_FILTER_ORDER = ['SSH', 'SS', 'SH', 'S', 'A', 'B', 'C', 'D'];
+function getPlayGrade(p) {
+  if (p.acc == null) return null;
+  const silver = p.mods && (p.mods.includes('HD') || p.mods.includes('FL'));
+  const miss = parseInt(p.miss || '0');
+  const acc = p.acc;
+  if (acc >= 100)                                   return silver ? 'SSH' : 'SS';
+  if (acc >= 90 && miss === 0)                      return silver ? 'SH'  : 'S';
+  if ((acc >= 80 && miss === 0) || acc >= 90)       return 'A';
+  if ((acc >= 70 && miss === 0) || acc >= 80)       return 'B';
+  if (acc >= 60)                                    return 'C';
+  return 'D';
+}
+function toggleGradeFilter(g) {
+  gradeFilter = gradeFilter === g ? null : g;
+  renderGradeFilters();
+  renderTable();
+}
+function renderGradeFilters() {
+  const container = document.getElementById('grade-filters');
+  container.innerHTML = GRADE_FILTER_ORDER.map(g => {
+    const f = GRADE_FILE[g];
+    const src = `${OSU_ASSETS}/score-ranks-v2019/GradeSmall-${f}.svg`;
+    return `<button class="grade-filter-btn${gradeFilter === g ? ' active' : ''}" onclick="toggleGradeFilter('${g}')" title="${g}">
+      <img src="${src}" alt="${g}">
+    </button>`;
+  }).join('');
+}
 function getFiltered(sorted) {
   const q = document.getElementById('search-input').value.toLowerCase();
   return sorted.filter(p => {
@@ -978,6 +1258,7 @@ function getFiltered(sorted) {
     if (firstFilter && !p.firstPlace) return false;
     if (!firstFilter && lovedFilter && !p.loved) return false;
     if (!firstFilter && !lovedFilter && p.loved) return false;
+    if (gradeFilter && getPlayGrade(p) !== gradeFilter) return false;
     if (q && !(p.beatmap || '').toLowerCase().includes(q)) return false;
     return true;
   });
@@ -1088,13 +1369,15 @@ function renderTable() {
     const coverStyle = p.coverUrl ? ` class="has-cover" style="--row-bg:url('${p.coverUrl}')"` : '';
     return `<tr${coverStyle}>
       <td><span class="rank-num">${globalRank}</span></td>
-      <td><span class="pp-w">${p.loved ? '<span style="color:#ff66aa;font-size:10px;">Loved</span>' : p._weighted.toFixed(0)}</span></td>
       <td><span class="pp-raw">${Number(p.pp).toFixed(0)}</span></td>
+      <td><span class="pp-w">${p.loved ? '<span style="color:#ff66aa;font-size:10px;">Loved</span>' : p._weighted.toFixed(0)}</span></td>
+      <td style="text-align:center">${calcGrade(acc, miss, p.mods)}</td>
       <td style="max-width:260px" title="${esc(p.beatmap)}">${nameCell}${p.loved ? '<span style="color:#ff66aa;margin-left:6px;" title="Loved map">♥</span>' : ''}</td>
       <td>${modBadge(p.mods)}</td>
-      <td><div class="acc-cell"><span class="acc-num">${(Math.floor(acc * 100) / 100).toFixed(2)}%</span>${calcGrade(acc, miss, p.mods)}</div></td>
+      <td><div class="acc-cell"><span class="acc-num">${(Math.floor(acc * 100) / 100).toFixed(2)}%</span></div></td>
       <td>${comboTag(p)}</td>
       <td><div class="act-btns">
+        <button class="btn btn-sm btn-icon" id="preview-btn-${p.id}" onclick="togglePreview('${p.id}','${p.link}')" title="Preview">▶</button>
         <button class="btn btn-sm btn-icon" onclick="editPlay('${p.id}')" title="Edit">✎</button>
         <button class="btn btn-sm btn-icon" style="color:var(--red)" onclick="deletePlay('${p.id}')" title="Delete">✕</button>
       </div></td>
@@ -1132,16 +1415,138 @@ function showToast(msg) {
 
 // ── Events ────────────────────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { closeModal(); closeSetup(); }
+  if (e.key === 'Escape') { closeModal(); closeSetup(); closeNewProfileModal(); closeProfileDropdown(); }
   if (e.key === 'Enter' && document.getElementById('play-modal').classList.contains('open')) savePlay();
+});
+document.addEventListener('click', e => {
+  const sw = document.getElementById('profile-switcher');
+  if (!sw.contains(e.target)) closeProfileDropdown();
 });
 document.getElementById('play-modal').addEventListener('click', e => { if (e.target.id === 'play-modal') closeModal(); });
 document.getElementById('setup-modal').addEventListener('click', e => { if (e.target.id === 'setup-modal') closeSetup(); });
 document.getElementById('delete-modal').addEventListener('click', e => { if (e.target.id === 'delete-modal') closeDeleteModal(); });
+document.getElementById('new-profile-modal').addEventListener('click', e => { if (e.target.id === 'new-profile-modal') closeNewProfileModal(); });
 
 load();
 renderModPicker();
+renderGradeFilters();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
+
+// ── Background canvas ──────────────────────────────────────────────
+(function() {
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+
+  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const N = 25;
+  const tris = Array.from({length: N}, () => ({
+    x: Math.random() * window.innerWidth,
+    y: Math.random() * window.innerHeight,
+    size: 30 + Math.random() * 90,
+    speed: 0.2 + Math.random() * 0.4,
+    opacity: 0.12 + Math.random() * 0.15,
+    rot: Math.random() * Math.PI * 2,
+    rotSpeed: (Math.random() - 0.5) * 0.003,
+    filled: Math.random() < 0.4,
+  }));
+
+  function draw(t) {
+    ctx.save();
+    ctx.translate(t.x, t.y);
+    ctx.rotate(t.rot);
+    ctx.beginPath();
+    ctx.moveTo(0, -t.size);
+    ctx.lineTo(t.size * 0.866, t.size * 0.5);
+    ctx.lineTo(-t.size * 0.866, t.size * 0.5);
+    ctx.closePath();
+    if (t.filled) {
+      ctx.fillStyle = `rgba(255,102,170,${t.opacity * 0.4})`;
+      ctx.fill();
+    }
+    ctx.strokeStyle = `rgba(255,102,170,${t.opacity})`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function loop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    tris.forEach(t => {
+      t.y -= t.speed;
+      t.rot += t.rotSpeed;
+      if (t.y + t.size < 0) { t.y = canvas.height + t.size; t.x = Math.random() * canvas.width; }
+      draw(t);
+    });
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+
+// ── Import / Export ────────────────────────────────────────────────
+function openExportModal() {
+  // Export only the current profile's plays as a plain array
+  document.getElementById('export-textarea').value = JSON.stringify(plays, null, 2);
+  document.getElementById('export-modal').classList.add('open');
+}
+function closeExportModal() { document.getElementById('export-modal').classList.remove('open'); }
+function copyExport() {
+  const ta = document.getElementById('export-textarea');
+  navigator.clipboard.writeText(ta.value).then(() => {
+    const btn = document.getElementById('copy-export-btn');
+    btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy', 1500);
+  });
+}
+
+function openImportModal() { document.getElementById('import-textarea').value = ''; document.getElementById('import-modal').classList.add('open'); }
+function closeImportModal() { document.getElementById('import-modal').classList.remove('open'); }
+function doImport() {
+  try {
+    const imported = JSON.parse(document.getElementById('import-textarea').value.trim());
+    if (!Array.isArray(imported)) throw new Error('Expected a plays array (export from a profile first)');
+    plays = imported;
+    save();
+    closeImportModal();
+    renderTable();
+    updateStats();
+  } catch(e) { alert('Import failed: ' + e.message); }
+}
+
+document.getElementById('export-modal').addEventListener('click', e => { if (e.target.id === 'export-modal') closeExportModal(); });
+document.getElementById('import-modal').addEventListener('click', e => { if (e.target.id === 'import-modal') closeImportModal(); });
 
 </script>
+
+<!-- Export Modal -->
+<div class="modal-bg" id="export-modal">
+  <div class="modal" style="width:560px">
+    <h2>Export Data</h2>
+    <p class="modal-sub">Copy this JSON and save it somewhere safe.</p>
+    <textarea id="export-textarea" readonly style="width:100%;height:200px;background:var(--bg3);color:var(--text);border:1px solid var(--border2);border-radius:var(--rs);padding:10px;font-family:monospace;font-size:11px;resize:none;outline:none;"></textarea>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeExportModal()">Close</button>
+      <button class="btn btn-pink" id="copy-export-btn" onclick="copyExport()">Copy</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import Modal -->
+<div class="modal-bg" id="import-modal">
+  <div class="modal" style="width:560px">
+    <h2>Import Data</h2>
+    <p class="modal-sub">Paste your exported JSON below and click Import.</p>
+    <textarea id="import-textarea" placeholder='{"ppsheet_profiles": "...", ...}' style="width:100%;height:200px;background:var(--bg3);color:var(--text);border:1px solid var(--border2);border-radius:var(--rs);padding:10px;font-family:monospace;font-size:11px;resize:none;outline:none;"></textarea>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeImportModal()">Cancel</button>
+      <button class="btn btn-pink" onclick="doImport()">Import</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

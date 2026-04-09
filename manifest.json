@@ -1,0 +1,13 @@
+{
+  "name": "PPSheet",
+  "short_name": "PPSheet",
+  "description": "osu! pp tracking sheet",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0e0e12",
+  "theme_color": "#ff66aa",
+  "icons": [
+    { "src": "/logo.png", "sizes": "500x500", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

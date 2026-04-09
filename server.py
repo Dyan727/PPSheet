@@ -15,6 +15,11 @@ import urllib.request
 import urllib.error
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
+LOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'server.log')
+def log(msg):
+    with open(LOG_FILE, 'a') as f:
+        f.write(f"[{time.strftime('%H:%M:%S')}] {msg}\n")
+
 PORT = 8080
 HTML_FILE = 'pp-tracker (2).html'
 OSU_TOKEN_URL = 'https://osu.ppy.sh/oauth/token'
@@ -88,15 +93,19 @@ class Handler(BaseHTTPRequestHandler):
             self.send_response(404); self.end_headers(); return
 
         try:
+            log(f"Token request -> {target}")
             req = urllib.request.Request(
                 target, data=body, method='POST',
                 headers={'Content-Type': 'application/json', 'Accept': 'application/json'}
             )
             with urllib.request.urlopen(req, timeout=15) as resp:
+                log(f"Token response: {resp.status}")
                 self._proxy_response(resp)
         except urllib.error.HTTPError as e:
+            log(f"Token HTTP error: {e.code} {e.reason} body={e.read()[:200]}")
             self._proxy_response(e)
         except Exception as ex:
+            log(f"Token exception: {type(ex).__name__}: {ex}")
             self._send_json(502, {'error': str(ex)})
 
     def do_GET(self):

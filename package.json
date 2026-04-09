@@ -1,0 +1,34 @@
+{
+  "name": "ppsheet",
+  "version": "1.0.0",
+  "main": "server.js",
+  "bin": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "build": "pkg server.js --targets node18-win-x64 --output dist/PPSheet.exe --compress GZip && node build-post.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "osu! pp tracking sheet",
+  "dependencies": {
+    "rosu-pp-js": "^3.1.0"
+  },
+  "pkg": {
+    "assets": [
+      "pp-tracker (2).html",
+      "install.html",
+      "manifest.json",
+      "sw.js",
+      "logo.png",
+      "node_modules/rosu-pp-js/rosu_pp_js_bg.wasm"
+    ],
+    "targets": [
+      "node18-win-x64"
+    ]
+  },
+  "devDependencies": {
+    "png-to-ico": "^3.0.1",
+    "rcedit": "^4.0.1"
+  }
+}

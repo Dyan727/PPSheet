@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Install PPSheet</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#ff66aa">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Inconsolata:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0e0e12; color: #e8e8f0;
+    font-family: 'Nunito', sans-serif;
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  }
+  .card {
+    background: #15151c; border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 20px; padding: 48px 56px; text-align: center;
+    max-width: 420px; width: 100%;
+  }
+  .logo { width: 80px; height: 80px; border-radius: 20px; margin-bottom: 20px; }
+  h1 { font-family: 'Inconsolata', monospace; font-size: 28px; color: #ff66aa; margin-bottom: 6px; }
+  .sub { font-size: 14px; color: #8888aa; margin-bottom: 32px; line-height: 1.6; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: #ff66aa; color: #fff; border: none; border-radius: 10px;
+    font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 700;
+    padding: 14px 32px; cursor: pointer; transition: background 0.15s;
+    width: 100%; justify-content: center;
+  }
+  .btn:hover { background: #cc4d88; }
+  .btn:disabled { background: #555570; cursor: not-allowed; }
+  .status { margin-top: 20px; font-size: 13px; color: #8888aa; min-height: 20px; line-height: 1.6; }
+  .status.ok { color: #3de68a; }
+  .status.err { color: #ff5555; }
+  .waiting { color: #555570; font-size: 13px; margin-top: 20px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <img class="logo" src="/logo.png" alt="PPSheet">
+  <h1>ppsheet</h1>
+  <p class="sub">Click below to install PPSheet as a desktop app.<br>This gives you a proper icon, taskbar entry, and standalone window.</p>
+
+  <button class="btn" id="install-btn" disabled>Install PPSheet</button>
+  <div class="status" id="status"></div>
+  <div class="waiting" id="waiting">Waiting for browser install prompt...</div>
+  <div class="status" id="fallback" style="display:none;margin-top:12px;">
+    Already installed? Go to <b>chrome://apps</b>, right-click PPSheet → <b>Remove from Chrome</b>, then reload this page.<br><br>
+    Or click the <b>⊕ install icon</b> in your browser's address bar directly.
+  </div>
+</div>
+
+<script>
+  let deferredPrompt = null;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('install-btn').disabled = false;
+    document.getElementById('waiting').style.display = 'none';
+    document.getElementById('fallback').style.display = 'none';
+  });
+
+  // Show fallback hint after 3 seconds if prompt never fires
+  setTimeout(() => {
+    if (!deferredPrompt) {
+      document.getElementById('waiting').style.display = 'none';
+      document.getElementById('fallback').style.display = 'block';
+    }
+  }, 3000);
+
+  document.getElementById('install-btn').addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    document.getElementById('install-btn').disabled = true;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    if (outcome === 'accepted') {
+      document.getElementById('status').textContent = 'Installing...';
+      document.getElementById('status').className = 'status ok';
+    } else {
+      document.getElementById('install-btn').disabled = false;
+      document.getElementById('status').textContent = 'Cancelled — click Install to try again.';
+      document.getElementById('status').className = 'status err';
+    }
+  });
+
+  window.addEventListener('appinstalled', () => {
+    document.getElementById('install-btn').disabled = true;
+    document.getElementById('status').textContent = 'Installed! You can close this window — PPSheet just opened.';
+    document.getElementById('status').className = 'status ok';
+    setTimeout(() => window.close(), 1500);
+  });
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }
+</script>
+</body>
+</html>
